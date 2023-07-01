@@ -58,6 +58,28 @@ importers:
         specifier: ^4.5.3
         version: 4.9.5
 
+  examples/eventsub:
+    dependencies:
+      '@twapi/eventsub':
+        specifier: workspace:^
+        version: link:../../packages/eventsub
+    devDependencies:
+      '@twapi/eslint-config-custom':
+        specifier: workspace:^
+        version: link:../../packages/config/eslint-config-custom
+      '@twapi/tsconfig':
+        specifier: workspace:^
+        version: link:../../packages/config/tsconfig
+      '@types/node':
+        specifier: ^17.0.12
+        version: 17.0.45
+      eslint:
+        specifier: ^7.32.0
+        version: 7.32.0
+      tsup:
+        specifier: ^7.1.0
+        version: 7.1.0(typescript@4.9.5)
+
   packages/config/eslint-config-custom:
     dependencies:
       eslint-config-next:
@@ -1654,7 +1676,7 @@ packages:
       js-string-escape: 1.0.1
       lodash: 4.17.21
       md5-hex: 3.0.1
-      semver: 7.5.0
+      semver: 7.5.3
       well-known-symbols: 2.0.0
     dev: true
 
@@ -4449,7 +4471,7 @@ packages:
   /strip-literal@1.0.1:
     resolution: {integrity: sha512-QZTsipNpa2Ppr6v1AmJHESqJ3Uz247MUS0OjrnnZjFAvEoWqxuyFuXn2xLgMtRnijJShAa1HL0gtJyUs7u7n3Q==}
     dependencies:
-      acorn: 8.8.2
+      acorn: 8.9.0
     dev: true
 
   /styled-jsx@5.1.1(react@18.2.0):

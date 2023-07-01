@@ -1,0 +1,25 @@
+{
+  "name": "eventsub",
+  "version": "1.0.0",
+  "description": "An example showing how to use @twapi/eventsub to interact with twitch eventsub",
+  "private": true,
+  "main": "index.js",
+  "scripts": {
+    "dev": "tsup --watch",
+    "build": "tsup src/index.ts --format cjs,esm --dts",
+    "lint": "eslint \"**/*.{ts,tsx}\" --max-warnings 0"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@twapi/eslint-config-custom": "workspace:^",
+    "@twapi/tsconfig": "workspace:^",
+    "@types/node": "^17.0.12",
+    "eslint": "^7.32.0",
+    "tsup": "^7.1.0"
+  },
+  "dependencies": {
+    "@twapi/eventsub": "workspace:^"
+  }
+}

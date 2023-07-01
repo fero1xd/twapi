@@ -1,0 +1,6 @@
+{
+  "extends": "@twapi/tsconfig/base.json",
+  "compilerOptions": {
+    "isolatedModules": false
+  }
+}
