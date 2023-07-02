@@ -1,9 +1,13 @@
-import { InitialSubscribtions, WebsocketMessage } from "./types";
+import {
+  InitialSubscriptions,
+  internalMessage,
+  WebsocketMessage,
+} from "./types";
 import { WebSocket, MessageEvent } from "ws";
 import { ConnectionClosed } from "./errors";
 
 export class EventSub {
-  private initialSubscribtions: InitialSubscribtions;
+  private initialSubscriptions: InitialSubscriptions;
 
   connection: WebSocket | undefined;
   private sessionId: string | undefined;
@@ -11,18 +15,18 @@ export class EventSub {
   /**
    * ----------Constructor------------
    *
-   * @param initialSubscribtions A non empty list of initial subscribtions is important as twitch closes the connection
+   * @param initialSubscriptions A non empty list of initial subscriptions is important as twitch closes the connection
    *  if we dont subscribe to an event within 10 seconds of connecting
    */
-  constructor(initialSubscribtions: InitialSubscribtions) {
-    this.initialSubscribtions = initialSubscribtions;
+  constructor(initialSubscriptions: InitialSubscriptions) {
+    this.initialSubscriptions = initialSubscriptions;
   }
 
   /**
-   * @returns Initial list of subscribtions which was passed in the constructor
+   * @returns Initial list of subscriptions which was passed in the constructor
    */
   public getInitialSubscribtions() {
-    return this.initialSubscribtions;
+    return this.initialSubscriptions;
   }
 
   /**
@@ -42,7 +46,7 @@ export class EventSub {
   }
 
   private _onMessage(e: MessageEvent) {
-    this._assertConnectionisOpen();
+    this._assertConnectionIsOpen();
 
     if (e.data === "PING") {
       console.log("[+] Received ping: " + e.data);
@@ -57,7 +61,7 @@ export class EventSub {
     }
   }
 
-  private _assertConnectionisOpen(): asserts this is this & {
+  private _assertConnectionIsOpen(): asserts this is this & {
     connection: WebSocket;
   } {
     if (!this.isConnected()) {
@@ -69,10 +73,7 @@ export class EventSub {
    * All messages except notification and revocation message are considered as internal message and end user has nothing to do with it
    */
   private _isInternalMessage(message: WebsocketMessage) {
-    return (
-      message.metadata.message_type in
-      ["session_welcome", "session_keepalive", "session_reconnect"]
-    );
+    return message.metadata.message_type in internalMessage;
   }
 
   /**
