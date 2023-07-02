@@ -21,9 +21,11 @@
     "@twapi/eslint-config-custom": "workspace:^",
     "@twapi/tsconfig": "workspace:*",
     "@types/node": "^17.0.12",
+    "@types/ws": "^8.5.5",
     "eslint": "^7.32.0",
     "tsup": "^7.1.0",
-    "vitest": "^0.32.2"
+    "vitest": "^0.32.2",
+    "ws": "^8.13.0"
   },
   "publishConfig": {
     "access": "public"

@@ -1,5 +1,5 @@
 {
-  "name": "eventsub",
+  "name": "@twapi/eventsub-example",
   "version": "1.0.0",
   "description": "An example showing how to use @twapi/eventsub to interact with twitch eventsub",
   "private": true,
