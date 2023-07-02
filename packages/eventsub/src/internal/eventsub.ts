@@ -1,48 +1,38 @@
-import {
-  InitialSubscriptions,
-  internalMessage,
-  WebsocketMessage,
-} from "./types";
-import { WebSocket, MessageEvent } from "ws";
+import { WebsocketMessage } from "./types";
+import { WebSocket, MessageEvent, CloseEvent } from "ws";
 import { ConnectionClosed } from "./errors";
+import { Message } from "./message";
 
 export class EventSub {
-  private initialSubscriptions: InitialSubscriptions;
-
   connection: WebSocket | undefined;
   private sessionId: string | undefined;
 
-  /**
-   * ----------Constructor------------
-   *
-   * @param initialSubscriptions A non empty list of initial subscriptions is important as twitch closes the connection
-   *  if we dont subscribe to an event within 10 seconds of connecting
-   */
-  constructor(initialSubscriptions: InitialSubscriptions) {
-    this.initialSubscriptions = initialSubscriptions;
-  }
-
-  /**
-   * @returns Initial list of subscriptions which was passed in the constructor
-   */
-  public getInitialSubscribtions() {
-    return this.initialSubscriptions;
-  }
+  private checkConnectionLostTimeout: NodeJS.Timeout | undefined;
+  private keepaliveTimeout: number = -1;
 
   /**
    * Connects to twitch's eventsub system
    */
   public run() {
-    if (this.connection?.OPEN || this.connection?.CONNECTING) {
-      console.log("[-] Connection is already opened or is connecting");
+    if (
+      this.connection?.OPEN ||
+      this.connection?.CONNECTING ||
+      this.connection?.CLOSING
+    ) {
+      console.log("[-] Connection is already opened or is connecting/closing");
       return;
     }
 
     this.connection = new WebSocket("wss://eventsub.wss.twitch.tv/ws");
-    this.connection.onmessage = this._onMessage;
-    this.connection.onclose = (e) => {
-      console.log("[-] Websocket connection closed, Reason: " + e.code);
-    };
+    this.connection.onmessage = this._onMessage.bind(this);
+
+    this.connection.onclose = this._onClose.bind(this);
+  }
+
+  private _onClose(e: CloseEvent) {
+    console.log("[-] Websocket connection closed, Reason: " + e.code);
+    this.sessionId = undefined;
+    clearTimeout(this.checkConnectionLostTimeout);
   }
 
   private _onMessage(e: MessageEvent) {
@@ -53,9 +43,11 @@ export class EventSub {
       return this.connection.send("PONG");
     }
 
-    const message = JSON.parse(e.data as string) as WebsocketMessage;
+    const message = new Message(
+      JSON.parse(e.data as string) as WebsocketMessage
+    );
 
-    if (this._isInternalMessage(message)) {
+    if (message.isInternal()) {
       this._handleInternalMessage(message);
       return;
     }
@@ -70,24 +62,68 @@ export class EventSub {
   }
 
   /**
-   * All messages except notification and revocation message are considered as internal message and end user has nothing to do with it
-   */
-  private _isInternalMessage(message: WebsocketMessage) {
-    return message.metadata.message_type in internalMessage;
-  }
-
-  /**
    * Handles internal ws commands
    * @param message Websocket parsed message
    */
-  private _handleInternalMessage(message: WebsocketMessage) {
-    console.log(message);
+  private _handleInternalMessage(message: Message) {
+    switch (message.getType()) {
+      case "session_welcome":
+        this.sessionId = message.getPayload().session!.id;
+
+        console.log(
+          "[+] Successfuly Connected to twitch EventSub. Session ID: " +
+            this.sessionId
+        );
+
+        const timeoutSeconds =
+          message.getPayload().session!.keepalive_timeout_seconds;
+
+        this.keepaliveTimeout = timeoutSeconds;
+
+        // +5 seconds for safety
+        this._startTicking(timeoutSeconds + 5);
+
+        break;
+
+      case "session_keepalive":
+        console.log(
+          "[+] Got keepalive message, reseting the keepalive timer. It means the conneection is good"
+        );
+
+        clearTimeout(this.checkConnectionLostTimeout);
+        this._startTicking(this.keepaliveTimeout);
+
+        break;
+      default:
+        break;
+    }
+  }
+
+  /**
+   * If no event or keepalive message received in last specified seconds. Then attempt to close and reconnect
+   * @param number Amount of seconds after which we will reconnect
+   */
+  private _startTicking(secs: number) {
+    this.checkConnectionLostTimeout = setTimeout(() => {
+      // Check first if we have disconnected for some other reason
+      // If yes then dont reconnect
+      if (!this.isConnected()) {
+        return;
+      }
+
+      // We reach here, it means immediately reconnect
+      console.log(
+        `[-] No event or keepalive message received in last ${secs} seconds. This connection is probably lost, reconnecting!`
+      );
+
+      // TODO: Reconnect
+    }, secs * 1000);
   }
 
   /**
    * Checks wether the connection is still active
    */
   public isConnected() {
-    return this.connection && this.connection.OPEN;
+    return this.connection && this.connection.readyState === 1;
   }
 }
