@@ -1,7 +1,14 @@
-import { WebsocketMessage } from "./types";
+import {
+  Condition,
+  EasyToUseMap,
+  ValidSubscription,
+  WebsocketMessage,
+} from "./types";
 import { WebSocket, MessageEvent, CloseEvent } from "ws";
 import { ConnectionClosed } from "./errors";
 import { Message } from "./message";
+import { createSubscription } from "./api";
+import { subRemap } from "./constants";
 
 /**
  * Create a new instance whenever you want to interact with twitch eventsub system
@@ -11,18 +18,28 @@ export class EventSub {
   connection: WebSocket | undefined;
 
   // Session id received in welcome message. used for subscribing to events
-  private sessionId: string | undefined;
+  private sessionId?: string;
 
   // Checks if the current connection to twitch is lost
-  private checkConnectionLostTimeout: NodeJS.Timeout | undefined;
+  private checkConnectionLostTimeout?: NodeJS.Timeout;
 
   // Number of seconds after which connection is meant to be lost
   private keepaliveTimeout: number = -1;
 
+  // User oauth token
+  private readonly oauthToken: string;
+  // Client id
+  private readonly clientId: string;
+
   /**
    * ---------CONSTRUCTOR--------
+   * @param oauthToken A user oauth token. It is used to create any subscription
+   * @param clientId Application id
    */
-  constructor() {}
+  constructor(oauthToken: string, clientId: string) {
+    this.oauthToken = oauthToken;
+    this.clientId = clientId;
+  }
 
   /**
    * Connects to twitch's eventsub system
@@ -38,6 +55,14 @@ export class EventSub {
     this.connection = new WebSocket("wss://eventsub.wss.twitch.tv/ws");
     this.connection.onmessage = this._onMessage.bind(this);
     this.connection.onclose = this._onClose.bind(this);
+    this.connection.on("ping", this._handlePing.bind(this));
+  }
+
+  /**
+   * Handles ping pong cycle
+   */
+  private _handlePing() {
+    this.connection?.pong();
   }
 
   /**
@@ -69,21 +94,35 @@ export class EventSub {
   private _onMessage(e: MessageEvent) {
     this._assertConnectionIsOpen();
 
-    if (e.data === "PING") {
-      console.log("[+] Received ping: " + e.data);
-      return this.connection.send("PONG");
-    }
-
-    const message = new Message(
-      JSON.parse(e.data as string) as WebsocketMessage
-    );
+    let message = new Message(JSON.parse(e.data as string) as WebsocketMessage);
 
     if (message.isInternal()) {
       this._handleInternalMessage(message);
       return;
     }
+
+    this._resetConnectionLostTimeout();
+
+    const revocationMessage = message.asRevocation();
+    if (revocationMessage) {
+      console.log(
+        "[-] Subscription revoked for event: " +
+          revocationMessage.getMeta().subscription_type
+      );
+      console.log(
+        "Reason: " + revocationMessage.getPayload().subscription.status
+      );
+
+      return;
+    }
+
+    const notificationMessage = message.asNotification();
+    if (!notificationMessage) return;
   }
 
+  /**
+   * Makes sure that we are connected
+   */
   private _assertConnectionIsOpen(): asserts this is this & {
     connection: WebSocket;
   } {
@@ -111,9 +150,6 @@ export class EventSub {
 
         this.keepaliveTimeout = timeoutSeconds;
 
-        // +5 seconds for safety
-        this._startTicking(timeoutSeconds + 5);
-
         break;
 
       case "session_keepalive":
@@ -121,13 +157,17 @@ export class EventSub {
           "[+] Got keepalive message, reseting the keepalive timer. It means the conneection is good"
         );
 
-        clearTimeout(this.checkConnectionLostTimeout);
-        this._startTicking(this.keepaliveTimeout);
-
         break;
       default:
         break;
     }
+    this._resetConnectionLostTimeout();
+  }
+
+  private _resetConnectionLostTimeout() {
+    clearTimeout(this.checkConnectionLostTimeout);
+    // +15 seconds for safety
+    this._startTicking(this.keepaliveTimeout + 15);
   }
 
   /**
@@ -149,6 +189,44 @@ export class EventSub {
 
       // TODO: Reconnect
     }, secs * 1000);
+  }
+
+  /**
+   * Helper function to create subscriptions
+   * @param event Name of the event you want to subsribe to
+   * @param condition Data related with that subscribtion
+   */
+  private async _createSubHelper<T extends ValidSubscription>(
+    event: T,
+    condition: Condition<T>
+  ) {
+    this._assertConnectionIsOpen();
+
+    if (!this.sessionId) return;
+
+    await createSubscription(this.oauthToken, this.clientId, {
+      type: event,
+      version: "1",
+      transport: {
+        method: "websocket",
+        session_id: this.sessionId,
+      },
+      condition,
+    });
+  }
+
+  /**
+   * Use this to listen to any event
+   * @param event Name of the event
+   * @param condition Data related to the event required to subscribe
+   */
+  public on<T extends keyof EasyToUseMap>(
+    ...args: Condition<EasyToUseMap[T]> extends Record<string, never>
+      ? [event: T]
+      : [event: T, condition: Condition<EasyToUseMap[T]>]
+  ) {
+    const event = args[0];
+    console.log("[+] Listening on event: " + subRemap[event]);
   }
 
   /**

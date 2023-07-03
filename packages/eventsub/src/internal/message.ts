@@ -1,17 +1,21 @@
-import { internalMessage, WebsocketMessage } from "./types";
+import { internalMessage } from "./constants";
+import { ValidSubscription, WebsocketMessage } from "./types";
 
 /**
  * Class responsible for parsing incomming ws message
  */
-export class Message {
-  private readonly message: WebsocketMessage;
+export class Message<
+  TEvent extends ValidSubscription = never,
+  TSub extends boolean = false
+> {
+  private readonly message: WebsocketMessage<TEvent, TSub>;
 
   /**
    * ----------Constructor------------
    *
    * @param message The incomming websocket message
    */
-  constructor(message: WebsocketMessage) {
+  constructor(message: WebsocketMessage<TEvent, TSub>) {
     this.message = message;
   }
 
@@ -30,6 +34,28 @@ export class Message {
   isInternal() {
     // @ts-ignore - OkkkkkkkkkK!
     return internalMessage.includes(this.message.metadata.message_type);
+  }
+
+  /**
+   * @returns same instance with new generics
+   */
+  asNotification(): Message<TEvent, true> | null {
+    if (this.message.metadata.message_type === "notification") {
+      return this as Message<TEvent, true>;
+    }
+
+    return null;
+  }
+
+  /**
+   * @returns same instance with new generics
+   */
+  asRevocation(): Message<TEvent, true> | null {
+    if (this.message.metadata.message_type === "revocation") {
+      return this as Message<TEvent, true>;
+    }
+
+    return null;
   }
 
   /**

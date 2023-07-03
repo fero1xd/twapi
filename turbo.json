@@ -19,5 +19,6 @@
     "test": {
       "dependsOn": ["build"]
     }
-  }
+  },
+  "globalEnv": ["SAMPLE_OAUTH_TOKEN", "CLIENT_ID"]
 }

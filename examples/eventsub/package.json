@@ -16,6 +16,7 @@
     "@twapi/eslint-config-custom": "workspace:^",
     "@twapi/tsconfig": "workspace:^",
     "@types/node": "^17.0.12",
+    "dotenv": "^16.3.1",
     "eslint": "^7.32.0",
     "tsup": "^7.1.0"
   },
