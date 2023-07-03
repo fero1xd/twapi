@@ -3,38 +3,69 @@ import { WebSocket, MessageEvent, CloseEvent } from "ws";
 import { ConnectionClosed } from "./errors";
 import { Message } from "./message";
 
+/**
+ * Create a new instance whenever you want to interact with twitch eventsub system
+ */
 export class EventSub {
+  // Websocket connection to twitch
   connection: WebSocket | undefined;
+
+  // Session id received in welcome message. used for subscribing to events
   private sessionId: string | undefined;
 
+  // Checks if the current connection to twitch is lost
   private checkConnectionLostTimeout: NodeJS.Timeout | undefined;
+
+  // Number of seconds after which connection is meant to be lost
   private keepaliveTimeout: number = -1;
+
+  /**
+   * ---------CONSTRUCTOR--------
+   */
+  constructor() {}
 
   /**
    * Connects to twitch's eventsub system
    */
   public run() {
-    if (
-      this.connection?.OPEN ||
-      this.connection?.CONNECTING ||
-      this.connection?.CLOSING
-    ) {
-      console.log("[-] Connection is already opened or is connecting/closing");
+    if (!this._canOpenConnection()) {
+      console.log(
+        "[-] Cannot open new connection, connection is not in closed state"
+      );
       return;
     }
 
     this.connection = new WebSocket("wss://eventsub.wss.twitch.tv/ws");
     this.connection.onmessage = this._onMessage.bind(this);
-
     this.connection.onclose = this._onClose.bind(this);
   }
 
+  /**
+   * Checks if we can connect/reconnect
+   * @returns true if connection is undefined or closed, false if connection is not in closed state
+   */
+  private _canOpenConnection() {
+    if (!this.connection) {
+      return true;
+    }
+
+    return this.connection.readyState === 3;
+  }
+
+  /**
+   * Handles closing of the connection
+   * @param e Websocket Close event
+   */
   private _onClose(e: CloseEvent) {
     console.log("[-] Websocket connection closed, Reason: " + e.code);
     this.sessionId = undefined;
     clearTimeout(this.checkConnectionLostTimeout);
   }
 
+  /**
+   * Handles incomming raw websocket message
+   * @param e Raw websocket message event
+   */
   private _onMessage(e: MessageEvent) {
     this._assertConnectionIsOpen();
 
@@ -124,6 +155,6 @@ export class EventSub {
    * Checks wether the connection is still active
    */
   public isConnected() {
-    return this.connection && this.connection.readyState === 1;
+    return this.connection !== undefined && this.connection.readyState === 1;
   }
 }
