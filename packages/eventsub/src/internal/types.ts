@@ -47,6 +47,8 @@ export type InternalMessage = (typeof internalMessage)[number];
 
 export type ValidSubscription = (typeof availableSubscriptions)[number];
 
+type Prettify<T> = { [K in keyof T]: T[K] } & {};
+
 // -------------- API ----------------
 
 type SubWithoutBroadcasterId =
@@ -57,48 +59,41 @@ type SubWithoutBroadcasterId =
   | "user.authorization.revoke"
   | "user.update";
 
-type UserAuthSubCondition = "client_id";
-
 type DropEntitlementGrantCondition =
   | "organization_id"
   | "category_id"
   | "campaign_id";
 
-// Clear this mess
-type GeneralCondition<T extends ValidSubscription> = {
-  [K in T as T extends SubWithoutBroadcasterId
-    ? never
-    : "broadcaster_user_id"]: string;
-} & {
-  [K in T as T extends `user.${string}` ? UserAuthSubCondition : never]: string;
-} & {
-  [K in T as T extends "channel.raid"
-    ? "from_broadcaster_user_id" | "to_broadcaster_user_id"
-    : never]: string;
-} & {
-  [K in T as T extends "channel.follow" | `channel.guest_star_${string}.update`
-    ? "moderator_id"
-    : never]: string;
-} & {
-  [K in T as T extends
-    | `channel.channel_points_custom_reward_redemption.${string}`
-    | `channel.channel_points_custom_reward.${"update" | "remove"}`
-    ? "reward_id"
-    : never]: string;
-} & {
-  [K in T as T extends "drop.entitlement.grant"
-    ? DropEntitlementGrantCondition
-    : never]: string;
-} & {
-  [K in T as T extends `extension.${string}`
-    ? "extension_client_id"
-    : never]: string;
-};
+type Key<T extends ValidSubscription> = T extends `user.${string}`
+  ? "client_id"
+  : T extends "channel.raid"
+  ? "from_broadcaster_user_id" | "to_broadcaster_user_id"
+  : T extends "channel.follow" | `channel.guest_star_${string}.update`
+  ? "moderator_id"
+  : T extends
+      | `channel.channel_points_custom_reward_redemption.${string}`
+      | `channel.channel_points_custom_reward.${"update" | "remove"}`
+  ? "reward_id"
+  : T extends "drop.entitlement.grant"
+  ? DropEntitlementGrantCondition
+  : T extends `extension.${string}`
+  ? "extension_client_id"
+  : never;
+
+type GeneralCondition<T extends ValidSubscription> = T extends T
+  ? {
+      [K in T as Key<T>]: string;
+    } & {
+      [K in T as T extends SubWithoutBroadcasterId
+        ? never
+        : "broadcaster_user_id"]: string;
+    }
+  : never;
 
 export type Condition<T extends ValidSubscription> =
   GeneralCondition<T> extends Record<string, never>
     ? Record<string, never>
-    : GeneralCondition<T>;
+    : Prettify<GeneralCondition<T>>;
 
 export interface CreateSubscriptionRequest<T extends ValidSubscription> {
   type: T;
