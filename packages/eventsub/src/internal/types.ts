@@ -9,8 +9,12 @@ export type WebsocketMessage<
     message_type: MessageType;
     message_timestamp: string;
 
-    subscription_type: TSub extends true ? ValidSubscription : undefined;
-    subscription_version: TSub extends true ? string : undefined;
+    subscription_type: TSub extends true
+      ? [TEvent] extends [never]
+        ? ValidSubscription
+        : TEvent
+      : never;
+    subscription_version: TSub extends true ? string : never;
   };
   payload: {
     session?: {
@@ -24,11 +28,11 @@ export type WebsocketMessage<
     subscription: TSub extends true
       ? {
           id: string;
-          type: ValidSubscription;
+          type: [TEvent] extends [never] ? ValidSubscription : TEvent;
           version: string;
           status: string;
           cost: number;
-          condition: Condition<TEvent> extends Record<string, never>
+          condition: Condition<TEvent> extends EmptyObject
             ? any
             : Condition<TEvent>;
           transport: {
@@ -37,9 +41,17 @@ export type WebsocketMessage<
           };
           created_at: string;
         }
-      : undefined;
+      : never;
+
+    event: TSub extends true
+      ? [TEvent] extends [never]
+        ? any
+        : EventDataMap[TEvent]
+      : never;
   };
 };
+
+export type EmptyObject = Record<string, never>;
 
 export type MessageType = InternalMessage | "revocation" | "notification";
 
@@ -90,10 +102,9 @@ type GeneralCondition<T extends ValidSubscription> = T extends T
     }
   : never;
 
-export type Condition<T extends ValidSubscription> =
-  GeneralCondition<T> extends Record<string, never>
-    ? Record<string, never>
-    : Prettify<GeneralCondition<T>>;
+export type Condition<T extends ValidSubscription> = Prettify<
+  GeneralCondition<T>
+>;
 
 export interface CreateSubscriptionRequest<T extends ValidSubscription> {
   type: T;
@@ -108,6 +119,7 @@ export interface CreateSubscriptionRequest<T extends ValidSubscription> {
 }
 
 // ---------- LISTENERS --------------
+export type ConnectedListener = (sessionId: string) => void;
 
 export type ReplaceDots<T extends string> =
   T extends `${infer A}.${infer B}${infer C}`
@@ -129,4 +141,10 @@ export type ReplaceUnderScores<T extends string> =
 
 export type EasyToUseMap = {
   [K in ValidSubscription as ReplaceDots<ReplaceUnderScores<K>>]: K;
+};
+
+export type EventDataMap = {
+  [K in ValidSubscription]: {
+    test: boolean;
+  };
 };

@@ -1,14 +1,17 @@
+import { CloseEvent, MessageEvent, WebSocket } from "ws";
+import { createSubscription } from "./api";
+import { subRemap } from "./constants";
+import { ConnectionClosed } from "./errors";
+import { Listener } from "./listener";
+import { Message } from "./message";
 import {
   Condition,
+  ConnectedListener,
   EasyToUseMap,
+  EventDataMap,
   ValidSubscription,
   WebsocketMessage,
 } from "./types";
-import { WebSocket, MessageEvent, CloseEvent } from "ws";
-import { ConnectionClosed } from "./errors";
-import { Message } from "./message";
-import { createSubscription } from "./api";
-import { subRemap } from "./constants";
 
 /**
  * Create a new instance whenever you want to interact with twitch eventsub system
@@ -31,6 +34,10 @@ export class EventSub {
   // Client id
   private readonly clientId: string;
 
+  private listeners: Listener<any>[] = [];
+
+  private connectedListener?: ConnectedListener;
+
   /**
    * ---------CONSTRUCTOR--------
    * @param oauthToken A user oauth token. It is used to create any subscription
@@ -43,8 +50,9 @@ export class EventSub {
 
   /**
    * Connects to twitch's eventsub system
+   * @param onConnected optional. Will be called when connection establishes successfully
    */
-  public run() {
+  public run(onConnected?: ConnectedListener) {
     if (!this._canOpenConnection()) {
       console.log(
         "[-] Cannot open new connection, connection is not in closed state"
@@ -56,6 +64,7 @@ export class EventSub {
     this.connection.onmessage = this._onMessage.bind(this);
     this.connection.onclose = this._onClose.bind(this);
     this.connection.on("ping", this._handlePing.bind(this));
+    this.connectedListener = onConnected;
   }
 
   /**
@@ -118,6 +127,14 @@ export class EventSub {
 
     const notificationMessage = message.asNotification();
     if (!notificationMessage) return;
+
+    const subs = this.listeners.filter(
+      (l) =>
+        l.getSubscriptionName() ===
+        notificationMessage.getMeta().subscription_type
+    );
+
+    subs.forEach((s) => s.triggerHandler({ test: true }));
   }
 
   /**
@@ -141,7 +158,7 @@ export class EventSub {
         this.sessionId = message.getPayload().session!.id;
 
         console.log(
-          "[+] Successfuly Connected to twitch EventSub. Session ID: " +
+          "[+] successfully Connected to twitch EventSub. Session ID: " +
             this.sessionId
         );
 
@@ -149,6 +166,8 @@ export class EventSub {
           message.getPayload().session!.keepalive_timeout_seconds;
 
         this.keepaliveTimeout = timeoutSeconds;
+
+        this.connectedListener?.(this.sessionId);
 
         break;
 
@@ -219,14 +238,45 @@ export class EventSub {
    * Use this to listen to any event
    * @param event Name of the event
    * @param condition Data related to the event required to subscribe
+   * @throws ConnectionClosed when you try to register when the connection is established
    */
-  public on<T extends keyof EasyToUseMap>(
-    ...args: Condition<EasyToUseMap[T]> extends Record<string, never>
-      ? [event: T]
-      : [event: T, condition: Condition<EasyToUseMap[T]>]
+  public register<T extends keyof EasyToUseMap>(
+    event: T,
+    condition: Condition<EasyToUseMap[T]>
   ) {
-    const event = args[0];
+    this._assertConnectionIsOpen();
+
+    const ogEvent = subRemap[event];
     console.log("[+] Listening on event: " + subRemap[event]);
+
+    const l = new Listener(subRemap[event]);
+
+    this._createSubHelper(ogEvent, condition)
+      .then(() => {
+        console.log("[+] Subscription created successfully");
+        this.listeners.push(l);
+      })
+      .catch((_) => {
+        console.log("[-] Subscription creation failed");
+        l.triggerError();
+      });
+
+    return {
+      onTrigger: (handler: (data: EventDataMap[typeof ogEvent]) => void) => {
+        l.handle(handler);
+      },
+      onError: (handler: () => void) => {
+        l.handleError(handler);
+      },
+      unsusbscribe: () => {},
+    };
+  }
+
+  /**
+   * @param handler Callback function, called when we successfully connect to twitch
+   */
+  public onConnected(handler: ConnectedListener) {
+    this.connectedListener = handler;
   }
 
   /**

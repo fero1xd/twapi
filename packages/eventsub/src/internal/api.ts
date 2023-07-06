@@ -14,19 +14,15 @@ export const createSubscription = async <TSub extends ValidSubscription>(
   clientId: string,
   body: CreateSubscriptionRequest<TSub>
 ) => {
-  try {
-    const res = await axios.post(
-      "https://api.twitch.tv/helix/eventsub/subscriptions",
-      body,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Client-Id": clientId,
-        },
-      }
-    );
-    console.log(res.data);
-  } catch (e) {
-    console.log(e);
-  }
+  const res = await axios.post(
+    "https://api.twitch.tv/helix/eventsub/subscriptions",
+    body,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Client-Id": clientId,
+      },
+    }
+  );
+  console.log(res.data);
 };
