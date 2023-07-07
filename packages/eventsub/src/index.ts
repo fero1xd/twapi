@@ -1,1 +1,2 @@
-export * from "./internal/eventsub";
+export * from "./eventsub";
+export * from "./errors";

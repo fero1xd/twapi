@@ -1,9 +1,9 @@
 import { CloseEvent, MessageEvent, WebSocket } from "ws";
-import { createSubscription } from "./api";
-import { subRemap } from "./constants";
+import { createSubscription } from "./internal/api";
+import { subRemap } from "./internal/constants";
 import { ConnectionClosed } from "./errors";
-import { Listener } from "./listener";
-import { Message } from "./message";
+import { Listener } from "./internal/listener";
+import { Message } from "./internal/message";
 import {
   Condition,
   ConnectedListener,
@@ -11,7 +11,7 @@ import {
   EventDataMap,
   ValidSubscription,
   WebsocketMessage,
-} from "./types";
+} from "./internal/types";
 
 /**
  * Create a new instance whenever you want to interact with twitch eventsub system
