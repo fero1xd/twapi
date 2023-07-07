@@ -1,10 +1,11 @@
 import { CloseEvent, MessageEvent, WebSocket } from "ws";
 import { createSubscription } from "./internal/api";
 import { subRemap } from "./internal/constants";
-import { ConnectionClosed } from "./errors";
+import { ConnectionClosed, CreateSubscriptionRequestFailed } from "./errors";
 import { Listener } from "./internal/listener";
 import { Message } from "./internal/message";
 import {
+  BadResponse,
   Condition,
   ConnectedListener,
   EasyToUseMap,
@@ -12,6 +13,7 @@ import {
   ValidSubscription,
   WebsocketMessage,
 } from "./internal/types";
+import axios, { AxiosError } from "axios";
 
 /**
  * Create a new instance whenever you want to interact with twitch eventsub system
@@ -38,6 +40,8 @@ export class EventSub {
 
   private connectedListener?: ConnectedListener;
 
+  private reconnect: boolean = false;
+
   /**
    * ---------CONSTRUCTOR--------
    * @param oauthToken A user oauth token. It is used to create any subscription
@@ -60,6 +64,7 @@ export class EventSub {
       return;
     }
 
+    console.log(`[+] Connecting to twitch eventsub`);
     this.connection = new WebSocket("wss://eventsub.wss.twitch.tv/ws");
     this.connection.onmessage = this._onMessage.bind(this);
     this.connection.onclose = this._onClose.bind(this);
@@ -94,6 +99,12 @@ export class EventSub {
     console.log("[-] Websocket connection closed, Reason: " + e.code);
     this.sessionId = undefined;
     clearTimeout(this.checkConnectionLostTimeout);
+
+    if (this.reconnect) {
+      console.log(`[+] Now reconnecting....`);
+      this.reconnect = false;
+      this.run();
+    }
   }
 
   /**
@@ -186,7 +197,7 @@ export class EventSub {
   private _resetConnectionLostTimeout() {
     clearTimeout(this.checkConnectionLostTimeout);
     // +15 seconds for safety
-    this._startTicking(this.keepaliveTimeout + 15);
+    this._startTicking(this.keepaliveTimeout + 10);
   }
 
   /**
@@ -206,7 +217,7 @@ export class EventSub {
         `[-] No event or keepalive message received in last ${secs} seconds. This connection is probably lost, reconnecting!`
       );
 
-      // TODO: Reconnect
+      this._reconnect();
     }, secs * 1000);
   }
 
@@ -235,6 +246,19 @@ export class EventSub {
   }
 
   /**
+   * Reconnects to twitch eventsub after a disconnect
+   * @param reconnectUrl Optional. It if when twitch send us a reconnect url
+   */
+  private _reconnect(reconnectUrl?: string) {
+    this.connection?.close();
+
+    this.reconnect = true;
+    // TODO: Make use of reconnectUrl,
+    //       Subscribe to all previously subscribed events,
+    //       not required if reconnect url is passed in
+  }
+
+  /**
    * Use this to listen to any event
    * @param event Name of the event
    * @param condition Data related to the event required to subscribe
@@ -256,16 +280,29 @@ export class EventSub {
         console.log("[+] Subscription created successfully");
         this.listeners.push(l);
       })
-      .catch((_) => {
+      .catch((e) => {
         console.log("[-] Subscription creation failed");
-        l.triggerError();
+        let error = new CreateSubscriptionRequestFailed(ogEvent);
+
+        if (axios.isAxiosError<BadResponse>(e)) {
+          error = new CreateSubscriptionRequestFailed(
+            ogEvent,
+            e.response?.data
+          );
+        }
+
+        l.triggerError(error);
       });
 
     return {
       onTrigger: (handler: (data: EventDataMap[typeof ogEvent]) => void) => {
         l.handle(handler);
       },
-      onError: (handler: () => void) => {
+      onError: (
+        handler: (
+          error: CreateSubscriptionRequestFailed<typeof ogEvent>
+        ) => void
+      ) => {
         l.handleError(handler);
       },
       unsusbscribe: () => {},

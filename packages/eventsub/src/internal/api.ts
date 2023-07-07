@@ -1,4 +1,8 @@
-import { CreateSubscriptionRequest, ValidSubscription } from "./types";
+import {
+  BadResponse,
+  CreateSubscriptionRequest,
+  ValidSubscription,
+} from "./types";
 import axios from "axios";
 
 /**

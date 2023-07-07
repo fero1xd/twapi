@@ -1,5 +1,6 @@
 import { EventDataMap, ValidSubscription } from "./types";
 import { v4 } from "uuid";
+import { CreateSubscriptionRequestFailed } from "../errors";
 
 export class Listener<TSub extends ValidSubscription> {
   private subscriptionName: TSub;
@@ -11,7 +12,7 @@ export class Listener<TSub extends ValidSubscription> {
   private handlerFunction?: (data: EventDataMap[TSub]) => void;
 
   // Called when unsuccessful in registering this event
-  private errorHandler?: () => void;
+  private errorHandler?: (error: CreateSubscriptionRequestFailed<TSub>) => void;
 
   /**
    * ------- CONSTRUCTOR ------
@@ -31,8 +32,8 @@ export class Listener<TSub extends ValidSubscription> {
     this.handlerFunction?.(data);
   }
 
-  public triggerError() {
-    this.errorHandler?.();
+  public triggerError(error: CreateSubscriptionRequestFailed<TSub>) {
+    this.errorHandler?.(error);
   }
 
   /**
@@ -43,7 +44,9 @@ export class Listener<TSub extends ValidSubscription> {
     this.handlerFunction = handler;
   }
 
-  public handleError(handler: () => void) {
+  public handleError(
+    handler: (error: CreateSubscriptionRequestFailed<TSub>) => void
+  ) {
     this.errorHandler = handler;
   }
 

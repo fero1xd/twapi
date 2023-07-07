@@ -63,6 +63,12 @@ type Prettify<T> = { [K in keyof T]: T[K] } & {};
 
 // -------------- API ----------------
 
+export type BadResponse = {
+  error: string;
+  status: number;
+  message: string;
+};
+
 type SubWithoutBroadcasterId =
   | "channel.raid"
   | "drop.entitlement.grant"
