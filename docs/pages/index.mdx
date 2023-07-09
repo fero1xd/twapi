@@ -1,11 +1,19 @@
-# Introduction
+import { Callout } from "nextra-theme-docs";
 
-Welcome to Nextra! This is a basic docs template. You can use it as a starting point for your own project :)
+# Twapi
 
-## What is Nextra?
+Twapi is a suite of packages that interact with twitch's backend services using **node.js** and **typescript**.
 
-A **simple**, **powerful** and **flexible** site generation framework with everything you love from Next.js.
+## Guides
 
-## Documentation
+| Package                         | Description                   |
+| :------------------------------ | :---------------------------- |
+| [EventSub](eventsub/quickstart) | Interact with twitch eventsub |
+| [Helix Api](helix/quickstart)   | Call the twitch helix api     |
+| [PubSub](pubsub/quickstart)     | Interact with twitch pubsub   |
+| [Chat](chat/quickstart)         | Interact with twitch irc chat |
 
-The documentation is available at [https://nextra.site](https://nextra.site).
+<Callout>
+  We tried to leverage typescript the most so it is **recommended** to use
+  typescript with any of the above libraries.
+</Callout>

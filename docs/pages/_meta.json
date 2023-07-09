@@ -1,4 +1,7 @@
 {
   "index": "Introduction",
-  "eventsub": "Event Sub"
+  "eventsub": "Event Sub",
+  "helix": "Helix API",
+  "pubsub": "Pub Sub",
+  "chat": "Chat"
 }

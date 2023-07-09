@@ -7,12 +7,15 @@ const client = new EventSub(
 );
 
 client.run(() => {
-  setTimeout(() => {
-    const channelUpdate = client.register("channelUpdate", {
-      broadcaster_user_id: "642902413",
-    });
-    channelUpdate.onTrigger((d) => {
-      console.log(d);
-    });
-  }, 2000);
+  const channelUpdate = client.register("channelUpdate", {
+    broadcaster_user_id: "642902413",
+  });
+  channelUpdate.onTrigger((d) => {
+    console.log(d);
+  });
+
+  channelUpdate.onError((e) => {
+    console.log(e.getMessage())
+    console.log(e.getResponse());
+  })
 });

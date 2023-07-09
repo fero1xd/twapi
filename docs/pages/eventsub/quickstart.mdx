@@ -1,7 +1,95 @@
+import { Callout, Steps, Tabs, Tab } from "nextra-theme-docs";
+
 # Getting started with Twitch EventSub
 
-```ts
-import { EventSub } from "@twapi/eventsub";
+Here is the complete [demo](https://github.com/fero1xd/twapi/tree/master/examples/eventsub)
 
-const client = new Client("oauth:xxxxx");
+<Steps>
+
+### Install the package
+
+Use any package manager of your choice.
+<Tabs items={["npm", "yarn", "pnpm"]}>
+  <Tab>
+    ```console copy
+    npm install @twapi/eventsub
+    ```
+  </Tab>
+  <Tab>
+    ```console copy
+    yarn add @twapi/eventsub
+    ```
+  </Tab>
+  <Tab>
+    ```console copy
+    pnpm install @twapi/eventsub
+    ```
+  </Tab>
+</Tabs>
+
+
+### Setup Typescript
+This step is **optional** but highly recommended.
+```console copy
+tsc --init
 ```
+
+### Get credentials
+You will need to get your Twitch application client id and your access token to use Twitch event sub as we use websocket as the transport 
+which requires an user access token for subscribing to events. 
+
+#### Links
+Follow these links to obtain your own credentials
+- [Twitch Developer Console](https://dev.twitch.tv/console)
+- [Twitch Oauth](https://dev.twitch.tv/docs/authentication/getting-tokens-oauth/)
+
+
+### Connect to Twitch Event Sub
+
+```ts copy filename="src/index.ts"
+import { EventSub } from '@twapi/eventsub'
+
+const ACCESS_TOKEN = "........"
+const CLIENT_ID = "........."
+
+const client = new EventSub(ACCESS_TOKEN, CLIENT_ID)
+
+client.run((sessionId) => {
+    console.log("[+] Successfuly connected with session id: " + sessionId)
+})
+```
+<Callout type="warning">
+The callback function passed to run method is only triggered once, not on reconnects.
+</Callout>
+
+
+### Listen to events
+```ts copy filename="src/index.ts"
+  const listener = client.register("channelUpdate", {
+    broadcaster_user_id: "642902413",
+  })
+
+  listener.onTrigger((d) => {
+    console.log(d);
+  })
+
+  listener.onError((e) => {
+    console.log(e.getResponse())
+  })
+```
+<Callout type="warning">
+This code will throw an error if you will try to register events before the connection is established.
+</Callout>
+
+Instead run this code in the callback function passed to `run()`.
+```ts copy filename="src/index.ts"
+client.run(() => {
+  const listener = client.register("channelUpdate", {
+    broadcaster_user_id: "642902413",
+  })
+})
+```
+
+Checkout the complete list of events [here](https://dev.twitch.tv/docs/eventsub/eventsub-subscription-types)
+
+</Steps>
