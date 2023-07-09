@@ -1,5 +1,9 @@
 import { availableSubscriptions, internalMessage } from "./constants";
 
+export interface WsWithId extends WebSocket {
+  id: string; // your custom property
+}
+
 export type WebsocketMessage<
   TEvent extends ValidSubscription = never,
   TSub extends boolean = false

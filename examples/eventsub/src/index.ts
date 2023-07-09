@@ -7,17 +7,12 @@ const client = new EventSub(
 );
 
 client.run(() => {
-  console.log("[*] Successfuly connected on client");
-  // const channelUpdate = client.register("channelBan", {
-  //   broadcaster_user_id: "123456",
-  // });
-
-  // channelUpdate.onTrigger((d) => {
-  //   console.log(d);
-  // });
-
-  // channelUpdate.onError((e) => {
-  //   console.log("[*] Subscription creation failed");
-  //   console.log(e.getResponse());
-  // });
+  setTimeout(() => {
+    const channelUpdate = client.register("channelUpdate", {
+      broadcaster_user_id: "642902413",
+    });
+    channelUpdate.onTrigger((d) => {
+      console.log(d);
+    });
+  }, 2000);
 });

@@ -13,7 +13,7 @@ import {
   ValidSubscription,
   WebsocketMessage,
 } from "./internal/types";
-import axios, { AxiosError } from "axios";
+import axios from "axios";
 
 /**
  * Create a new instance whenever you want to interact with twitch eventsub system
@@ -38,8 +38,13 @@ export class EventSub {
 
   private listeners: Listener<any>[] = [];
 
+  // Event listener when we first connect to twitch, doesnt run on subsequent reconnects
   private connectedListener?: ConnectedListener;
 
+  // Take care of above
+  private hasCalled: boolean = false;
+
+  // Boolean indicating wether to reconnect or not
   private reconnect: boolean = false;
 
   /**
@@ -65,7 +70,9 @@ export class EventSub {
     }
 
     console.log(`[+] Connecting to twitch eventsub`);
+
     this.connection = new WebSocket("wss://eventsub.wss.twitch.tv/ws");
+
     this.connection.onmessage = this._onMessage.bind(this);
     this.connection.onclose = this._onClose.bind(this);
     this.connection.on("ping", this._handlePing.bind(this));
@@ -103,6 +110,7 @@ export class EventSub {
     if (this.reconnect) {
       console.log(`[+] Now reconnecting....`);
       this.reconnect = false;
+
       this.run();
     }
   }
@@ -121,8 +129,6 @@ export class EventSub {
       return;
     }
 
-    this._resetConnectionLostTimeout();
-
     const revocationMessage = message.asRevocation();
     if (revocationMessage) {
       console.log(
@@ -139,11 +145,15 @@ export class EventSub {
     const notificationMessage = message.asNotification();
     if (!notificationMessage) return;
 
+    this._resetConnectionLostTimeout();
+
     const subs = this.listeners.filter(
       (l) =>
         l.getSubscriptionName() ===
         notificationMessage.getMeta().subscription_type
     );
+
+    console.log(notificationMessage);
 
     subs.forEach((s) => s.triggerHandler({ test: true }));
   }
@@ -178,7 +188,15 @@ export class EventSub {
 
         this.keepaliveTimeout = timeoutSeconds;
 
-        this.connectedListener?.(this.sessionId);
+        if (!this.hasCalled) {
+          this.hasCalled = true;
+          this.connectedListener?.(this.sessionId);
+        }
+
+        if (this.reconnect) {
+          this.reconnect = false;
+          this.connection?.close();
+        }
 
         break;
 
@@ -188,15 +206,22 @@ export class EventSub {
         );
 
         break;
+
+      case "session_reconnect":
+        console.log("[+] Received reconnect request from twitch");
+        const reconnectUrl = message.getPayload().session!.reconnect_url!;
+
+        this._reconnectWithUrl(reconnectUrl);
       default:
         break;
     }
+
     this._resetConnectionLostTimeout();
   }
 
   private _resetConnectionLostTimeout() {
     clearTimeout(this.checkConnectionLostTimeout);
-    // +15 seconds for safety
+    // +10 seconds for safety
     this._startTicking(this.keepaliveTimeout + 10);
   }
 
@@ -245,17 +270,32 @@ export class EventSub {
     });
   }
 
+  private _reconnectWithUrl(reconnectUrl: string) {
+    this.reconnect = true;
+
+    const newWs = new WebSocket(reconnectUrl);
+
+    newWs.onmessage = this._onMessage.bind(this);
+    newWs.onclose = this._onClose.bind(this);
+    newWs.on("ping", this._handlePing.bind(this));
+
+    const oldConn = this.connection;
+
+    if (oldConn) {
+      oldConn.onclose = () => {
+        console.log("[-] Overidden on close handler called ()");
+        this.connection = newWs;
+      };
+    }
+  }
+
   /**
    * Reconnects to twitch eventsub after a disconnect
-   * @param reconnectUrl Optional. It if when twitch send us a reconnect url
    */
-  private _reconnect(reconnectUrl?: string) {
-    this.connection?.close();
-
+  private _reconnect() {
     this.reconnect = true;
-    // TODO: Make use of reconnectUrl,
-    //       Subscribe to all previously subscribed events,
-    //       not required if reconnect url is passed in
+
+    this.connection?.close();
   }
 
   /**
