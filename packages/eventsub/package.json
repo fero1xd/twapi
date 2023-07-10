@@ -29,6 +29,7 @@
     "tsup": "^7.1.0",
     "uuid": "^9.0.0",
     "vitest": "^0.32.2",
+    "winston": "^3.9.0",
     "ws": "^8.13.0"
   },
   "publishConfig": {

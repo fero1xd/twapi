@@ -1,4 +1,4 @@
-import { EventDataMap, ValidSubscription } from "./types";
+import { EventDataMap, RevocationReason, ValidSubscription } from "./types";
 import { v4 } from "uuid";
 import { CreateSubscriptionRequestFailed } from "../errors";
 
@@ -6,7 +6,7 @@ export class Listener<TSub extends ValidSubscription> {
   private subscriptionName: TSub;
 
   // Unique listener id
-  private id: string;
+  private id?: string;
 
   // Called when a notification comes that matches this subscription
   private handlerFunction?: (data: EventDataMap[TSub]) => void;
@@ -14,14 +14,22 @@ export class Listener<TSub extends ValidSubscription> {
   // Called when unsuccessful in registering this event
   private errorHandler?: (error: CreateSubscriptionRequestFailed<TSub>) => void;
 
+  // Called when this subscription is revoked
+  private revocationHandler?: (reason: RevocationReason) => void;
+
   /**
    * ------- CONSTRUCTOR ------
    * This class calls the registered function whenever a subscription triggers
    * @param sub A valid subscription name
+   * @param id Subscription id
    */
-  constructor(sub: TSub) {
+  constructor(sub: TSub, id?: string) {
     this.subscriptionName = sub;
-    this.id = v4();
+    this.id = id;
+  }
+
+  public setId(id: string) {
+    this.id = id;
   }
 
   /**
@@ -32,8 +40,20 @@ export class Listener<TSub extends ValidSubscription> {
     this.handlerFunction?.(data);
   }
 
+  /**
+   * Triggers the error handler fn
+   * @param error Custom generic error class
+   */
   public triggerError(error: CreateSubscriptionRequestFailed<TSub>) {
     this.errorHandler?.(error);
+  }
+
+  /**
+   * Triggers the revocation handler
+   * @param reason Possible reason for this revocation
+   */
+  public triggerRevocationHandler(reason: RevocationReason) {
+    this.revocationHandler?.(reason);
   }
 
   /**
@@ -44,10 +64,22 @@ export class Listener<TSub extends ValidSubscription> {
     this.handlerFunction = handler;
   }
 
+  /**
+   * Registers error handler
+   * @param handler A callback function for handling error
+   */
   public handleError(
     handler: (error: CreateSubscriptionRequestFailed<TSub>) => void
   ) {
     this.errorHandler = handler;
+  }
+
+  /**
+   * Registers revocation handler
+   * @param handler A callback function for handling revocation
+   */
+  public handleRevocation(handler: (reason: RevocationReason) => void) {
+    this.revocationHandler = handler;
   }
 
   /**

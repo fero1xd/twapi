@@ -1,5 +1,5 @@
 import { CloseEvent, MessageEvent, WebSocket } from "ws";
-import { createSubscription } from "./internal/api";
+import { createSubscription, deleteSubscription } from "./internal/api";
 import { subRemap } from "./internal/constants";
 import { ConnectionClosed, CreateSubscriptionRequestFailed } from "./errors";
 import { Listener } from "./internal/listener";
@@ -10,10 +10,12 @@ import {
   ConnectedListener,
   EasyToUseMap,
   EventDataMap,
+  RevocationReason,
   ValidSubscription,
   WebsocketMessage,
 } from "./internal/types";
 import axios from "axios";
+import { logger } from "./internal/logger";
 
 /**
  * Create a new instance whenever you want to interact with twitch eventsub system
@@ -63,13 +65,13 @@ export class EventSub {
    */
   public run(onConnected?: ConnectedListener) {
     if (!this._canOpenConnection()) {
-      console.log(
-        "[-] Cannot open new connection, connection is not in closed state"
+      logger.error(
+        "Cannot open new connection, connection is not in closed state"
       );
       return;
     }
 
-    console.log(`[+] Connecting to twitch eventsub`);
+    logger.info(`Connecting to twitch eventsub`);
 
     this.connection = new WebSocket("wss://eventsub.wss.twitch.tv/ws");
 
@@ -103,12 +105,12 @@ export class EventSub {
    * @param e Websocket Close event
    */
   private _onClose(e: CloseEvent) {
-    console.log("[-] Websocket connection closed, Reason: " + e.code);
+    logger.warn("Websocket connection closed, Reason: " + e.code);
     this.sessionId = undefined;
     clearTimeout(this.checkConnectionLostTimeout);
 
     if (this.reconnect) {
-      console.log(`[+] Now reconnecting....`);
+      logger.info("Now reconnecting....");
       this.reconnect = false;
 
       this.run();
@@ -131,12 +133,28 @@ export class EventSub {
 
     const revocationMessage = message.asRevocation();
     if (revocationMessage) {
-      console.log(
+      logger.error(
         "[-] Subscription revoked for event: " +
           revocationMessage.getMeta().subscription_type
       );
-      console.log(
-        "Reason: " + revocationMessage.getPayload().subscription.status
+      const reason = revocationMessage.getPayload().subscription.status;
+
+      logger.error("Reason: " + reason);
+
+      const revokedSubs = this.listeners.filter(
+        (l) =>
+          l.getSubscriptionName() ===
+          revocationMessage.getMeta().subscription_type
+      );
+
+      revokedSubs.forEach((s) =>
+        s.triggerRevocationHandler(reason as RevocationReason)
+      );
+
+      this.listeners = this.listeners.filter(
+        (l) =>
+          l.getSubscriptionName() !==
+          revocationMessage.getMeta().subscription_type
       );
 
       return;
@@ -153,9 +171,9 @@ export class EventSub {
         notificationMessage.getMeta().subscription_type
     );
 
-    console.log(notificationMessage);
-
-    subs.forEach((s) => s.triggerHandler({ test: true }));
+    subs.forEach((s) =>
+      s.triggerHandler(notificationMessage.getPayload().event)
+    );
   }
 
   /**
@@ -178,8 +196,8 @@ export class EventSub {
       case "session_welcome":
         this.sessionId = message.getPayload().session!.id;
 
-        console.log(
-          "[+] successfully Connected to twitch EventSub. Session ID: " +
+        logger.info(
+          "Successfully Connected to twitch EventSub. Session ID: " +
             this.sessionId
         );
 
@@ -201,14 +219,12 @@ export class EventSub {
         break;
 
       case "session_keepalive":
-        console.log(
-          "[+] Got keepalive message, reseting the keepalive timer. It means the conneection is good"
-        );
+        logger.info("Got keepalive message. It means the connnection is good");
 
         break;
 
       case "session_reconnect":
-        console.log("[+] Received reconnect request from twitch");
+        logger.warn("Received reconnect request from twitch");
         const reconnectUrl = message.getPayload().session!.reconnect_url!;
 
         this._reconnectWithUrl(reconnectUrl);
@@ -238,8 +254,8 @@ export class EventSub {
       }
 
       // We reach here, it means immediately reconnect
-      console.log(
-        `[-] No event or keepalive message received in last ${secs} seconds. This connection is probably lost, reconnecting!`
+      logger.error(
+        `No event or keepalive message received in last ${secs} seconds. This connection is probably lost, reconnecting!`
       );
 
       this._reconnect();
@@ -259,7 +275,7 @@ export class EventSub {
 
     if (!this.sessionId) return;
 
-    await createSubscription(this.oauthToken, this.clientId, {
+    return await createSubscription(this.oauthToken, this.clientId, {
       type: event,
       version: "1",
       transport: {
@@ -270,6 +286,10 @@ export class EventSub {
     });
   }
 
+  /**
+   * Reconnects to twitch eventsub after a disconnect with a reconnect url
+   * @param reconnectUrl The url to connect to
+   */
   private _reconnectWithUrl(reconnectUrl: string) {
     this.reconnect = true;
 
@@ -283,7 +303,9 @@ export class EventSub {
 
     if (oldConn) {
       oldConn.onclose = () => {
-        console.log("[-] Overidden on close handler called ()");
+        logger.info(
+          "Old websocket connection closed, replacing with newly created one."
+        );
         this.connection = newWs;
       };
     }
@@ -299,6 +321,15 @@ export class EventSub {
   }
 
   /**
+   * Helper function to delete subsrciption
+   * @param id Subscription Id
+   */
+  private async _deleteSubscription(id: string) {
+    this._assertConnectionIsOpen();
+    await deleteSubscription(id, this.oauthToken, this.clientId);
+  }
+
+  /**
    * Use this to listen to any event
    * @param event Name of the event
    * @param condition Data related to the event required to subscribe
@@ -311,17 +342,19 @@ export class EventSub {
     this._assertConnectionIsOpen();
 
     const ogEvent = subRemap[event];
-    console.log("[+] Listening on event: " + subRemap[event]);
+    logger.info("Requesting to listen on event: " + ogEvent);
 
     const l = new Listener(subRemap[event]);
 
     this._createSubHelper(ogEvent, condition)
-      .then(() => {
-        console.log("[+] Subscription created successfully");
+      .then((id) => {
+        logger.info("Subscription created successfully for event: " + ogEvent);
+
+        l.setId(id!);
         this.listeners.push(l);
       })
       .catch((e) => {
-        console.log("[-] Subscription creation failed");
+        logger.error("Subscription creation failed for event: " + ogEvent);
         let error = new CreateSubscriptionRequestFailed(ogEvent);
 
         if (axios.isAxiosError<BadResponse>(e)) {
@@ -345,7 +378,23 @@ export class EventSub {
       ) => {
         l.handleError(handler);
       },
-      unsusbscribe: () => {},
+      onRevocation: (handler: (reason: RevocationReason) => void) => {
+        l.handleRevocation(handler);
+      },
+      unsubscribe: async () => {
+        if (l.getId()) {
+          try {
+            this.listeners = this.listeners.filter(
+              (listener) => listener.getId() === l.getId()
+            );
+
+            await this._deleteSubscription(l.getId()!);
+            logger.info("Successfuly deleted subscription");
+          } catch (ignored) {
+            logger.error("Deleting subscription failed");
+          }
+        }
+      },
     };
   }
 

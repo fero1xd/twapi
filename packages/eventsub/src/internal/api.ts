@@ -1,5 +1,5 @@
 import {
-  BadResponse,
+  CreateSubResponse,
   CreateSubscriptionRequest,
   ValidSubscription,
 } from "./types";
@@ -18,7 +18,7 @@ export const createSubscription = async <TSub extends ValidSubscription>(
   clientId: string,
   body: CreateSubscriptionRequest<TSub>
 ) => {
-  const res = await axios.post(
+  const res = await axios.post<CreateSubResponse>(
     "https://api.twitch.tv/helix/eventsub/subscriptions",
     body,
     {
@@ -28,5 +28,30 @@ export const createSubscription = async <TSub extends ValidSubscription>(
       },
     }
   );
-  console.log(res.data);
+
+  return res.data.data[0].id;
+};
+
+/**
+ *
+ * Use this function to delete a subscription
+ *
+ * @param id Subscription Id
+ * @param sub Name of a valid subscription. See ValidSubscription type
+ * @param clientId Application id
+ */
+export const deleteSubscription = async (
+  id: string,
+  token: string,
+  clientId: string
+) => {
+  await axios.delete(
+    `https://api.twitch.tv/helix/eventsub/subscriptions?id=${id}`,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Client-Id": clientId,
+      },
+    }
+  );
 };

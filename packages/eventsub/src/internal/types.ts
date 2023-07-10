@@ -1,9 +1,5 @@
 import { availableSubscriptions, internalMessage } from "./constants";
 
-export interface WsWithId extends WebSocket {
-  id: string; // your custom property
-}
-
 export type WebsocketMessage<
   TEvent extends ValidSubscription = never,
   TSub extends boolean = false
@@ -21,13 +17,15 @@ export type WebsocketMessage<
     subscription_version: TSub extends true ? string : never;
   };
   payload: {
-    session?: {
-      id: string;
-      status: string;
-      keepalive_timeout_seconds: number;
-      reconnect_url: string | null;
-      connected_at: string;
-    };
+    session?: TSub extends true
+      ? undefined
+      : {
+          id: string;
+          status: string;
+          keepalive_timeout_seconds: number;
+          reconnect_url: string | null;
+          connected_at: string;
+        };
 
     subscription: TSub extends true
       ? {
@@ -65,7 +63,17 @@ export type ValidSubscription = (typeof availableSubscriptions)[number];
 
 type Prettify<T> = { [K in keyof T]: T[K] } & {};
 
+export type RevocationReason =
+  | "user_removed"
+  | "authorization_revoked"
+  | "version_removed";
+
 // -------------- API ----------------
+export type CreateSubResponse = {
+  data: {
+    id: string;
+  }[];
+};
 
 export type BadResponse = {
   error: string;
@@ -153,8 +161,37 @@ export type EasyToUseMap = {
   [K in ValidSubscription as ReplaceDots<ReplaceUnderScores<K>>]: K;
 };
 
-export type EventDataMap = {
-  [K in ValidSubscription]: {
-    test: boolean;
-  };
+// --------- Events ------------
+
+type BroadcasterInfo = {
+  broadcaster_user_id: string;
+  broadcaster_user_login: string;
+  broadcaster_user_name: string;
 };
+
+type UserInfo = {
+  user_id: string;
+  user_login: string;
+  user_name: string;
+};
+
+type Category = {
+  category_id: string;
+  category_name: string;
+};
+
+export type EventDataMap = Prettify<
+  {
+    [K in ValidSubscription as K extends "channel.update" ? never : K]: {
+      test: boolean;
+    };
+  } & {
+    "channel.update": Prettify<
+      BroadcasterInfo &
+        Category & {
+          language: string;
+          content_classification_labels: string[];
+        }
+    >;
+  }
+>;
