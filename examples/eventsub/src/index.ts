@@ -1,4 +1,4 @@
-import { CreateSubscriptionRequestFailed, EventSub } from "@twapi/eventsub";
+import { EventSub } from "@twapi/eventsub";
 import "dotenv/config";
 
 const client = new EventSub(
@@ -8,7 +8,7 @@ const client = new EventSub(
 
 client.run(() => {
   const channelUpdate = client.register("channelUpdate", {
-    broadcaster_user_id: "642902413",
+    broadcaster_user_id: "",
   });
 
   channelUpdate.onTrigger((d) => {

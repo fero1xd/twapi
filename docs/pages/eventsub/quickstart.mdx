@@ -66,7 +66,7 @@ The callback function passed to run method is only triggered once, not on reconn
 ### Listen to events
 ```ts copy filename="src/index.ts"
   const listener = client.register("channelUpdate", {
-    broadcaster_user_id: "642902413",
+    broadcaster_user_id: "123456",
   })
 
   listener.onTrigger((d) => {
@@ -85,11 +85,23 @@ Instead run this code in the callback function passed to `run()`.
 ```ts copy filename="src/index.ts"
 client.run(() => {
   const listener = client.register("channelUpdate", {
-    broadcaster_user_id: "642902413",
+    broadcaster_user_id: "123456",
   })
 })
 ```
 
 Checkout the complete list of events [here](https://dev.twitch.tv/docs/eventsub/eventsub-subscription-types)
+
+### Unsubscribing events
+When you no longer need to listen on an event, you must unsubscribe from that event
+```ts copy filename="src/index.ts"
+  client.run(() => {
+    const listener = client.register("channelUpdate", {
+      broadcaster_user_id: "123456",
+    })
+    // ................
+    listener.unsubscribe();
+})
+``` 
 
 </Steps>
