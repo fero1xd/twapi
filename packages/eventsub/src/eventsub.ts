@@ -114,9 +114,9 @@ export class EventSub {
 
             l.triggerError(error);
           });
-
-        this.pendingListeners.splice(i, 1);
       });
+
+      this.pendingListeners = [];
     }
   }
 
@@ -432,11 +432,12 @@ export class EventSub {
         if (l.getId()) {
           try {
             this.listeners = this.listeners.filter(
-              (listener) => listener.getId() === l.getId()
+              (listener) => listener.getId() !== l.getId()
             );
 
             await this._deleteSubscription(l.getId()!);
             logger.info("Successfuly deleted subscription");
+
           } catch (ignored) {
             logger.error("Deleting subscription failed");
           }
