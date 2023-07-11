@@ -9,7 +9,8 @@
     "lint": "turbo run lint",
     "typecheck": "turbo run typecheck",
     "test": "turbo run test",
-    "ci": "pnpm run build && pnpm run lint && pnpm run test"
+    "ci": "pnpm run build && pnpm run lint && pnpm run test",
+    "release": "pnpm run build && pnpm run lint && pnpm run test && changeset publish"
   },
   "devDependencies": {
     "@changesets/cli": "^2.26.2",
