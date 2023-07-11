@@ -1,8 +1,16 @@
-import { EventDataMap, RevocationReason, ValidSubscription } from "./types";
+import {
+  Condition,
+  EventDataMap,
+  RevocationReason,
+  ValidSubscription,
+} from "./types";
 import { v4 } from "uuid";
 import { CreateSubscriptionRequestFailed } from "../errors";
 
-export class Listener<TSub extends ValidSubscription> {
+export class Listener<
+  TSub extends ValidSubscription = any,
+  TCond extends Condition<TSub> = any
+> {
   private subscriptionName: TSub;
 
   // Unique listener id
@@ -17,19 +25,26 @@ export class Listener<TSub extends ValidSubscription> {
   // Called when this subscription is revoked
   private revocationHandler?: (reason: RevocationReason) => void;
 
+  private condition: TCond;
+
   /**
    * ------- CONSTRUCTOR ------
    * This class calls the registered function whenever a subscription triggers
    * @param sub A valid subscription name
    * @param id Subscription id
    */
-  constructor(sub: TSub, id?: string) {
+  constructor(sub: TSub, condition: TCond, id?: string) {
     this.subscriptionName = sub;
     this.id = id;
+    this.condition = condition;
   }
 
   public setId(id: string) {
     this.id = id;
+  }
+
+  public getCondition() {
+    return this.condition;
   }
 
   /**

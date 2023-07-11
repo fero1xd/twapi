@@ -35,10 +35,15 @@ export class EventSub {
 
   // User oauth token
   private readonly oauthToken: string;
+
   // Client id
   private readonly clientId: string;
 
-  private listeners: Listener<any>[] = [];
+  // All currently active listeners
+  private listeners: Listener[] = [];
+
+  // Listeners waiting to be registered
+  private pendingListeners: Listener[] = [];
 
   // Event listener when we first connect to twitch, doesnt run on subsequent reconnects
   private connectedListener?: ConnectedListener;
@@ -79,6 +84,40 @@ export class EventSub {
     this.connection.onclose = this._onClose.bind(this);
     this.connection.on("ping", this._handlePing.bind(this));
     this.connectedListener = onConnected;
+  }
+
+  private _registerPendingListeners() {
+    if (this.pendingListeners.length > 0) {
+      logger.info("Registering pending listeners");
+
+      this.pendingListeners.forEach((l, i) => {
+        const ogEvent = l.getSubscriptionName();
+        this._createSubHelper(ogEvent, l.getCondition())
+          .then((id) => {
+            logger.info(
+              "Subscription created successfully for event: " + ogEvent
+            );
+
+            l.setId(id!);
+            this.listeners.push(l);
+          })
+          .catch((e) => {
+            logger.error("Subscription creation failed for event: " + ogEvent);
+            let error = new CreateSubscriptionRequestFailed(ogEvent);
+
+            if (axios.isAxiosError<BadResponse>(e)) {
+              error = new CreateSubscriptionRequestFailed(
+                ogEvent,
+                e.response?.data
+              );
+            }
+
+            l.triggerError(error);
+          });
+
+        this.pendingListeners.splice(i, 1);
+      });
+    }
   }
 
   /**
@@ -166,9 +205,7 @@ export class EventSub {
     this._resetConnectionLostTimeout();
 
     const subs = this.listeners.filter(
-      (l) =>
-        l.getSubscriptionName() ===
-        notificationMessage.getMeta().subscription_type
+      (l) => l.getId() === notificationMessage.getPayload().subscription.id
     );
 
     subs.forEach((s) =>
@@ -216,6 +253,8 @@ export class EventSub {
           this.connection?.close();
         }
 
+        this._registerPendingListeners();
+
         break;
 
       case "session_keepalive":
@@ -235,6 +274,9 @@ export class EventSub {
     this._resetConnectionLostTimeout();
   }
 
+  /**
+   * Resets the connection lost timeout that keep tracks of lost connection
+   */
   private _resetConnectionLostTimeout() {
     clearTimeout(this.checkConnectionLostTimeout);
     // +10 seconds for safety
@@ -333,39 +375,44 @@ export class EventSub {
    * Use this to listen to any event
    * @param event Name of the event
    * @param condition Data related to the event required to subscribe
-   * @throws ConnectionClosed when you try to register when the connection is established
    */
   public register<T extends keyof EasyToUseMap>(
     event: T,
     condition: Condition<EasyToUseMap[T]>
   ) {
-    this._assertConnectionIsOpen();
-
     const ogEvent = subRemap[event];
-    logger.info("Requesting to listen on event: " + ogEvent);
+    const l = new Listener(ogEvent, condition);
 
-    const l = new Listener(subRemap[event]);
+    if (!this.isConnected()) {
+      logger.warn("Not currently connected to twitch, waiting listener.");
 
-    this._createSubHelper(ogEvent, condition)
-      .then((id) => {
-        logger.info("Subscription created successfully for event: " + ogEvent);
+      this.pendingListeners.push(l);
+    } else {
+      logger.info("Requesting to listen on event: " + ogEvent);
 
-        l.setId(id!);
-        this.listeners.push(l);
-      })
-      .catch((e) => {
-        logger.error("Subscription creation failed for event: " + ogEvent);
-        let error = new CreateSubscriptionRequestFailed(ogEvent);
-
-        if (axios.isAxiosError<BadResponse>(e)) {
-          error = new CreateSubscriptionRequestFailed(
-            ogEvent,
-            e.response?.data
+      this._createSubHelper(ogEvent, condition)
+        .then((id) => {
+          logger.info(
+            "Subscription created successfully for event: " + ogEvent
           );
-        }
 
-        l.triggerError(error);
-      });
+          l.setId(id!);
+          this.listeners.push(l);
+        })
+        .catch((e) => {
+          logger.error("Subscription creation failed for event: " + ogEvent);
+          let error = new CreateSubscriptionRequestFailed(ogEvent);
+
+          if (axios.isAxiosError<BadResponse>(e)) {
+            error = new CreateSubscriptionRequestFailed(
+              ogEvent,
+              e.response?.data
+            );
+          }
+
+          l.triggerError(error);
+        });
+    }
 
     return {
       onTrigger: (handler: (data: EventDataMap[typeof ogEvent]) => void) => {
