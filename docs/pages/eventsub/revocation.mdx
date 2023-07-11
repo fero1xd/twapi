@@ -1,0 +1,33 @@
+import { Callout } from "nextra-theme-docs";
+
+
+# About Revocation
+A revocation message is sent if Twitch revokes a subscription. You will also receive the reason for this revocation.
+
+
+Possible values for reason are:
+
+- `user_removed` - The user mentioned in the subscription no longer exists.
+
+- `authorization_revoked` - The user revoked the authorization token that the subscription relied on.
+
+- `version_removed` - The subscribed to subscription type and version is no longer supported.
+
+
+## Handling Revocation
+
+We provide a callback function to be registered that will then be called if the subscription gets revoked.
+
+```ts copy filename="src/demo.ts"
+const listener = client.register("channelUpdate", {
+  broadcaster_user_id: "123456",
+});
+
+listener.onRevocation((reason) => {
+  console.log('[-] Authorization revoked, reason: ' + reason)
+})
+```
+
+<Callout type="warning">
+You will no longer receive events if your subscription gets revoked
+</Callout>

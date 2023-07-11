@@ -63,6 +63,15 @@ client.run((sessionId) => {
 });
 ```
 
+<Callout type="info">
+You can also register this event listener separately
+```ts copy filename="src/index.ts"
+client.onConnected((sessionId) => {
+  console.log("[+] Successfuly connected with session id: " + sessionId);
+});
+```
+</Callout>
+
 <Callout type="warning">
   The callback function passed to run method is only triggered once, not on
   reconnects.

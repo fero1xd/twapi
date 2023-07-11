@@ -1,0 +1,28 @@
+import { Callout } from "nextra-theme-docs";
+
+
+# Subscribing
+
+Twitch provides a number of events that you can subscribe to to get near real time notifications. For a list of events, see [EventSub Subscription Types](https://dev.twitch.tv/docs/eventsub/eventsub-subscription-types).
+
+To subscribe call the `register()` method of the eventsub client.
+
+```ts copy filename="src/sub.ts"
+const client = new EventSub(ACCESS_TOKEN, CLIENT_ID);
+
+client.register("channelUpdate", {
+  broadcaster_user_id: "123456"
+});
+```
+
+<Callout type="info">
+You dont have to subscribe to events inside the `onConnected` listener. We will automatically register all the pending subscriptions after connecting
+</Callout>
+
+## Condition
+The register function expects 2 arguments, first the `event` to subscribe to, second a condition.
+A **condition** is simply sepecific data required to subscribe to this event.
+
+<Callout type="info">
+If you are using typescript, you will have full `auto complete` and you will also not be able to enter invalid conditions.
+</Callout>
