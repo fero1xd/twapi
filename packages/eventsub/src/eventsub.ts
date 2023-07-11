@@ -83,7 +83,10 @@ export class EventSub {
     this.connection.onmessage = this._onMessage.bind(this);
     this.connection.onclose = this._onClose.bind(this);
     this.connection.on("ping", this._handlePing.bind(this));
-    this.connectedListener = onConnected;
+
+    if (!this.connectedListener) {
+      this.connectedListener = onConnected;
+    }
   }
 
   private _registerPendingListeners() {
@@ -437,7 +440,6 @@ export class EventSub {
 
             await this._deleteSubscription(l.getId()!);
             logger.info("Successfuly deleted subscription");
-
           } catch (ignored) {
             logger.error("Deleting subscription failed");
           }
