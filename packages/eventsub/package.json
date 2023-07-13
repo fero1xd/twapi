@@ -35,5 +35,8 @@
   },
   "publishConfig": {
     "access": "public"
+  },
+  "dependencies": {
+    "@twapi/logger": "workspace:^"
   }
 }

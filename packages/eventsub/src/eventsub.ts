@@ -15,7 +15,7 @@ import {
   WebsocketMessage,
 } from "./internal/types";
 import axios from "axios";
-import { logger } from "./internal/logger";
+import { logger } from "@twapi/logger";
 
 /**
  * Create a new instance whenever you want to interact with twitch eventsub system

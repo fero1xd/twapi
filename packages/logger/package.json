@@ -1,0 +1,25 @@
+{
+  "name": "@twapi/logger",
+  "version": "0.0.0",
+  "description": "Shared winston logger",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "private": true,
+  "scripts": {
+    "lint": "eslint \"**/*.{ts,tsx}\" --max-warnings 0",
+    "typecheck": "tsc --noEmit",
+    "build": "tsup src/index.ts --format cjs,esm --dts"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/node": "^20.4.2",
+    "tsup": "^7.1.0",
+    "winston": "^3.9.0"
+  },
+  "dependencies": {
+    "@twapi/tsconfig": "workspace:^"
+  }
+}
