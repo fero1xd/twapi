@@ -2,7 +2,9 @@
   "name": "@twapi/pubsub",
   "version": "0.0.0",
   "description": "Interact with twitch PubSub system",
-  "main": "index.js",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
   "private": false,
   "scripts": {
     "dev": "tsup src/index.ts --format cjs,esm --dts --watch",
@@ -20,6 +22,8 @@
     "@twapi/logger": "workspace:^",
     "@twapi/tsconfig": "workspace:^",
     "@types/node": "^20.4.2",
-    "tsup": "^7.1.0"
+    "@types/ws": "^8.5.5",
+    "tsup": "^7.1.0",
+    "ws": "^8.13.0"
   }
 }

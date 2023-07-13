@@ -83,6 +83,22 @@ importers:
         specifier: ^7.1.0
         version: 7.1.0(typescript@4.9.5)
 
+  examples/pubsub:
+    dependencies:
+      '@twapi/pubsub':
+        specifier: workspace:^
+        version: link:../../packages/pubusb
+    devDependencies:
+      '@twapi/tsconfig':
+        specifier: workspace:^
+        version: link:../../packages/config/tsconfig
+      '@types/node':
+        specifier: ^20.4.2
+        version: 20.4.2
+      tsup:
+        specifier: ^7.1.0
+        version: 7.1.0(typescript@4.9.5)
+
   packages/config/eslint-config-custom:
     dependencies:
       eslint-config-next:
@@ -170,9 +186,15 @@ importers:
       '@types/node':
         specifier: ^20.4.2
         version: 20.4.2
+      '@types/ws':
+        specifier: ^8.5.5
+        version: 8.5.5
       tsup:
         specifier: ^7.1.0
         version: 7.1.0(typescript@4.9.5)
+      ws:
+        specifier: ^8.13.0
+        version: 8.13.0
 
 packages:
 

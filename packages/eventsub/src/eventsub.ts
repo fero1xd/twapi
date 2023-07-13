@@ -15,7 +15,7 @@ import {
   WebsocketMessage,
 } from "./internal/types";
 import axios from "axios";
-import { logger } from "@twapi/logger";
+import { Logger, logger } from "@twapi/logger";
 
 /**
  * Create a new instance whenever you want to interact with twitch eventsub system
@@ -54,6 +54,9 @@ export class EventSub {
   // Boolean indicating wether to reconnect or not
   private reconnect: boolean = false;
 
+  // Logger
+  private log: Logger;
+
   /**
    * ---------CONSTRUCTOR--------
    * @param oauthToken A user oauth token. It is used to create any subscription
@@ -62,6 +65,7 @@ export class EventSub {
   constructor(oauthToken: string, clientId: string) {
     this.oauthToken = oauthToken;
     this.clientId = clientId;
+    this.log = logger("eventsub");
   }
 
   /**
@@ -70,13 +74,13 @@ export class EventSub {
    */
   public run(onConnected?: ConnectedListener) {
     if (!this._canOpenConnection()) {
-      logger.error(
+      this.log.error(
         "Cannot open new connection, connection is not in closed state"
       );
       return;
     }
 
-    logger.info(`Connecting to twitch eventsub`);
+    this.log.info(`Connecting to twitch eventsub`);
 
     this.connection = new WebSocket("wss://eventsub.wss.twitch.tv/ws");
 
@@ -91,13 +95,13 @@ export class EventSub {
 
   private _registerPendingListeners() {
     if (this.pendingListeners.length > 0) {
-      logger.info("Registering pending listeners");
+      this.log.info("Registering pending listeners");
 
       this.pendingListeners.forEach((l, i) => {
         const ogEvent = l.getSubscriptionName();
         this._createSubHelper(ogEvent, l.getCondition())
           .then((id) => {
-            logger.info(
+            this.log.info(
               "Subscription created successfully for event: " + ogEvent
             );
 
@@ -105,7 +109,9 @@ export class EventSub {
             this.listeners.push(l);
           })
           .catch((e) => {
-            logger.error("Subscription creation failed for event: " + ogEvent);
+            this.log.error(
+              "Subscription creation failed for event: " + ogEvent
+            );
             let error = new CreateSubscriptionRequestFailed(ogEvent);
 
             if (axios.isAxiosError<BadResponse>(e)) {
@@ -147,12 +153,12 @@ export class EventSub {
    * @param e Websocket Close event
    */
   private _onClose(e: CloseEvent) {
-    logger.warn("Websocket connection closed, Reason: " + e.code);
+    this.log.warn("Websocket connection closed, Reason: " + e.code);
     this.sessionId = undefined;
     clearTimeout(this.checkConnectionLostTimeout);
 
     if (this.reconnect) {
-      logger.info("Now reconnecting....");
+      this.log.info("Now reconnecting....");
       this.reconnect = false;
 
       this.run();
@@ -175,13 +181,13 @@ export class EventSub {
 
     const revocationMessage = message.asRevocation();
     if (revocationMessage) {
-      logger.error(
+      this.log.error(
         "[-] Subscription revoked for event: " +
           revocationMessage.getMeta().subscription_type
       );
       const reason = revocationMessage.getPayload().subscription.status;
 
-      logger.error("Reason: " + reason);
+      this.log.error("Reason: " + reason);
 
       const revokedSubs = this.listeners.filter(
         (l) =>
@@ -236,7 +242,7 @@ export class EventSub {
       case "session_welcome":
         this.sessionId = message.getPayload().session!.id;
 
-        logger.info(
+        this.log.info(
           "Successfully Connected to twitch EventSub. Session ID: " +
             this.sessionId
         );
@@ -261,12 +267,14 @@ export class EventSub {
         break;
 
       case "session_keepalive":
-        logger.info("Got keepalive message. It means the connnection is good");
+        this.log.info(
+          "Got keepalive message. It means the connnection is good"
+        );
 
         break;
 
       case "session_reconnect":
-        logger.warn("Received reconnect request from twitch");
+        this.log.warn("Received reconnect request from twitch");
         const reconnectUrl = message.getPayload().session!.reconnect_url!;
 
         this._reconnectWithUrl(reconnectUrl);
@@ -299,7 +307,7 @@ export class EventSub {
       }
 
       // We reach here, it means immediately reconnect
-      logger.error(
+      this.log.error(
         `No event or keepalive message received in last ${secs} seconds. This connection is probably lost, reconnecting!`
       );
 
@@ -348,7 +356,7 @@ export class EventSub {
 
     if (oldConn) {
       oldConn.onclose = () => {
-        logger.info(
+        this.log.info(
           "Old websocket connection closed, replacing with newly created one."
         );
         this.connection = newWs;
@@ -387,15 +395,15 @@ export class EventSub {
     const l = new Listener(ogEvent, condition);
 
     if (!this.isConnected()) {
-      logger.warn("Not currently connected to twitch, waiting listener.");
+      this.log.warn("Not currently connected to twitch, waiting listener.");
 
       this.pendingListeners.push(l);
     } else {
-      logger.info("Requesting to listen on event: " + ogEvent);
+      this.log.info("Requesting to listen on event: " + ogEvent);
 
       this._createSubHelper(ogEvent, condition)
         .then((id) => {
-          logger.info(
+          this.log.info(
             "Subscription created successfully for event: " + ogEvent
           );
 
@@ -403,7 +411,7 @@ export class EventSub {
           this.listeners.push(l);
         })
         .catch((e) => {
-          logger.error("Subscription creation failed for event: " + ogEvent);
+          this.log.error("Subscription creation failed for event: " + ogEvent);
           let error = new CreateSubscriptionRequestFailed(ogEvent);
 
           if (axios.isAxiosError<BadResponse>(e)) {
@@ -439,9 +447,9 @@ export class EventSub {
             );
 
             await this._deleteSubscription(l.getId()!);
-            logger.info("Successfuly deleted subscription");
+            this.log.info("Successfuly deleted subscription");
           } catch (ignored) {
-            logger.error("Deleting subscription failed");
+            this.log.error("Deleting subscription failed");
           }
         }
       },

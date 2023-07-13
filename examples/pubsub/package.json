@@ -1,0 +1,23 @@
+{
+  "name": "@twapi/pubsub-example",
+  "version": "1.0.0",
+  "description": "An example showing how to use @twapi/pubsub to interact with twitch pubsub",
+  "main": "index.js",
+  "private": true,
+  "scripts": {
+    "dev": "tsup --watch",
+    "build": "tsup src/index.ts --format cjs,esm --dts",
+    "lint": "eslint \"**/*.{ts,tsx}\" --max-warnings 0"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@twapi/tsconfig": "workspace:^",
+    "@types/node": "^20.4.2",
+    "tsup": "^7.1.0"
+  },
+  "dependencies": {
+    "@twapi/pubsub": "workspace:^"
+  }
+}
