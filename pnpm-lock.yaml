@@ -87,7 +87,7 @@ importers:
     dependencies:
       '@twapi/pubsub':
         specifier: workspace:^
-        version: link:../../packages/pubusb
+        version: link:../../packages/pubsub
     devDependencies:
       '@twapi/tsconfig':
         specifier: workspace:^
@@ -178,7 +178,7 @@ importers:
         specifier: ^3.9.0
         version: 3.9.0
 
-  packages/pubusb:
+  packages/pubsub:
     devDependencies:
       '@twapi/logger':
         specifier: workspace:^
