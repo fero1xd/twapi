@@ -69,3 +69,10 @@ export type ErrorMessage =
   | "ERR_BADAUTH"
   | "ERR_SERVER"
   | "ERR_BADTOPIC";
+
+export type ListenerWrap<T extends Topics> = {
+  onTrigger: (handler: TriggerHandler<T>) => void;
+  onError: (handler: ErrorHandlerFn) => void;
+  onRevocation: (handler: () => void) => void;
+  unsubscribe: () => void;
+};

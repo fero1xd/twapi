@@ -2,6 +2,7 @@ import { WebSocket, MessageEvent } from "ws";
 import { Logger, logger } from "@twapi/logger";
 import {
   ErrorHandlerFn,
+  ListenerWrap,
   MessageType,
   ParseArgs,
   ParsedMap,
@@ -12,6 +13,7 @@ import {
 import { topicsMap } from "./internal/constants";
 import { Listener } from "./internal/listener";
 import { replacePlaceholders } from "./internal/utils";
+import crypto from "crypto";
 
 export class PubSub {
   // Websocket Connection to twitch
@@ -37,6 +39,10 @@ export class PubSub {
   private connectedListener?: () => void;
 
   private listeners: Listener[] = [];
+
+  private _responseListeners: {
+    handler: (message: WebsocketMessage) => void;
+  }[] = [];
 
   /**
    * --------CONSTRUCTOR-------
@@ -71,39 +77,77 @@ export class PubSub {
       return;
     }
 
-    // Handle Auth revocation here
-    if (message.type === MessageType.AUTH_REVOKED) {
-    }
+    switch (message.type) {
+      case MessageType.PONG:
+        if (this.deadConnectionTimeout) {
+          clearTimeout(this.deadConnectionTimeout);
+          break;
+        }
 
-    // Handle Error here
-    if (message.type === MessageType.RESPONSE && message.error) {
-      this._handleError(message);
-    }
+      case MessageType.AUTH_REVOKED:
+        const revokedTopics = message.data?.topics;
+        this.log.error(`Auth revoked for topics: ${revokedTopics}`);
 
-    if (message.type === MessageType.MESSAGE) {
-      const relatedListeners = this.listeners.filter(
-        (l) => l.getParsedTopic() === message.data?.topic
-      );
+        this.listeners = this.listeners.filter((l) => {
+          if (revokedTopics?.includes(l.getParsedTopic())) {
+            l.triggerRevocationHandler();
+            return false;
+          }
 
-      relatedListeners.forEach((l) => l.triggerHandler({ test: true }));
+          return true;
+        });
 
-      const payload = message.data?.message;
+        break;
+
+      case MessageType.RESPONSE:
+        this._responseListeners.forEach((l) => l.handler(message));
+
+        if (message.error) {
+          this._handleError(message);
+        }
+
+        break;
+
+      case MessageType.MESSAGE:
+        const relatedListeners = this.listeners.filter(
+          (l) => l.getParsedTopic() === message.data?.topic
+        );
+
+        relatedListeners.forEach((l) => l.triggerHandler({ test: true }));
+
+        const payload = message.data?.message;
     }
   }
 
   private _handleError(message: WebsocketMessage) {
     switch (message.error) {
       case "ERR_BADAUTH":
-        this.listeners = this.listeners.filter(
-          (l) => l.getParsedTopic() === message.nonce
-        );
+        this.listeners = this.listeners.filter((l) => {
+          if (l.getParsedTopic() === message.nonce) {
+            this.log.error("Error BAD_AUTH for topic: " + l.getParsedTopic());
 
-        this.log.error("Error BAD_AUTH for topic: " + message.nonce);
+            l.triggerErrorHandler(message.error!);
+            return false;
+          }
+
+          return true;
+        });
+        break;
       default:
         break;
     }
   }
 
+  private _addResponseListener(handler: (message: WebsocketMessage) => void) {
+    const listener = { handler };
+    this._responseListeners.push(listener);
+
+    return () =>
+      this._responseListeners.splice(
+        this._responseListeners.indexOf(listener),
+        1
+      );
+  }
   /**
    * @returns true if connection is not initialized or is in closed state
    */
@@ -172,36 +216,83 @@ export class PubSub {
 
     const listener = new Listener(ogTopic, finalTopic);
     this.listeners.push(listener);
+    const nonce = this._generateNonce();
 
     this.log.info("Requesting to listen on topic: " + finalTopic);
 
-    this._send({
-      type: MessageType.LISTEN,
-      nonce: finalTopic,
-      data: {
-        topics: [finalTopic],
-        auth_token: this.oauthToken,
-      },
-    });
+    return new Promise<ListenerWrap<typeof ogTopic>>((res, rej) => {
+      let timeout: NodeJS.Timeout;
 
-    return {
-      onTrigger: (handler: TriggerHandler<typeof ogTopic>) => {
-        listener.setTriggerHandler(handler);
-      },
-      onError: (handler: ErrorHandlerFn) => {
-        listener.setErrorHandler(handler);
-      },
-      unsubscribe: () => {
-        this.log.info("Unsubscribing to topic: " + topic);
-        this.listeners = this.listeners.filter((l) => l.getTopic() === ogTopic);
-        this._send({
-          type: MessageType.UNLISTEN,
-          data: {
-            topics: [finalTopic],
+      const unsubscribe = this._addResponseListener((message) => {
+        if (message.nonce !== nonce) return;
+
+        unsubscribe();
+        if (timeout) clearTimeout(timeout);
+
+        if (message.error) {
+          // throw error
+          this.log.error(
+            "Error listening on the topic: " +
+              finalTopic +
+              ", error: " +
+              message.error
+          );
+          rej(
+            new Error(
+              "Error listening on the topic: " +
+                finalTopic +
+                ", error: " +
+                message.error
+            )
+          );
+          return;
+        }
+
+        this.log.info("Successfully listening on topic: " + finalTopic);
+        res({
+          onTrigger: (handler) => {
+            listener.setTriggerHandler(handler);
+          },
+          onError: (handler) => {
+            listener.setErrorHandler(handler);
+          },
+          onRevocation: (handler) => {
+            listener.setRevocationHandler(handler);
+          },
+          unsubscribe: () => {
+            this.log.info("Unsubscribing to topic: " + topic);
+            this.listeners = this.listeners.filter(
+              (l) => l.getTopic() === ogTopic
+            );
+            this._send({
+              type: MessageType.UNLISTEN,
+              data: {
+                topics: [finalTopic],
+              },
+            });
           },
         });
-      },
-    };
+      });
+
+      timeout = setTimeout(() => {
+        unsubscribe();
+        this.log.error("Timeout while listening on topic: " + finalTopic);
+        rej(new Error("Timeout error"));
+      }, 2000);
+
+      this._send({
+        type: MessageType.LISTEN,
+        nonce,
+        data: {
+          topics: [finalTopic],
+          auth_token: this.oauthToken,
+        },
+      });
+    });
+  }
+
+  private _generateNonce() {
+    return crypto.randomBytes(16).toString("base64");
   }
 
   /**

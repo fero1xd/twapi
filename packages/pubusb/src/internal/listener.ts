@@ -16,6 +16,8 @@ export class Listener<TTopic extends Topics = any> {
 
   private errorHandlerFunc?: ErrorHandlerFn;
 
+  private revocationHandler?: () => void;
+
   constructor(topic: TTopic, parsedTopic: string) {
     this.topic = topic;
     this.parsedTopic = parsedTopic;
@@ -29,12 +31,20 @@ export class Listener<TTopic extends Topics = any> {
     this.errorHandlerFunc = handler;
   }
 
+  public setRevocationHandler(handler: () => void) {
+    this.revocationHandler = handler;
+  }
+
   public triggerHandler(data: TopicDataMap[TTopic]) {
     this.handlerFunction?.(data);
   }
 
   public triggerErrorHandler(message: ErrorMessage) {
     this.errorHandlerFunc?.(message);
+  }
+
+  public triggerRevocationHandler() {
+    this.revocationHandler?.();
   }
 
   public getTopic() {
