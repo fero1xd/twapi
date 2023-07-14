@@ -15,6 +15,7 @@
   "devDependencies": {
     "@twapi/tsconfig": "workspace:^",
     "@types/node": "^20.4.2",
+    "dotenv": "^16.3.1",
     "tsup": "^7.1.0"
   },
   "dependencies": {
