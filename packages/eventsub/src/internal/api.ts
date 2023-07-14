@@ -1,6 +1,7 @@
 import {
   CreateSubResponse,
   CreateSubscriptionRequest,
+  GetSubscriptionsResponse,
   ValidSubscription,
 } from "./types";
 import axios from "axios";
@@ -21,12 +22,7 @@ export const createSubscription = async <TSub extends ValidSubscription>(
   const res = await axios.post<CreateSubResponse>(
     "https://api.twitch.tv/helix/eventsub/subscriptions",
     body,
-    {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Client-Id": clientId,
-      },
-    }
+    getHeaders(token, clientId)
   );
 
   return res.data.data[0].id;
@@ -47,11 +43,15 @@ export const deleteSubscription = async (
 ) => {
   await axios.delete(
     `https://api.twitch.tv/helix/eventsub/subscriptions?id=${id}`,
-    {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Client-Id": clientId,
-      },
-    }
+    getHeaders(token, clientId)
   );
+};
+
+const getHeaders = (token: string, clientId: string) => {
+  return {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Client-Id": clientId,
+    },
+  };
 };

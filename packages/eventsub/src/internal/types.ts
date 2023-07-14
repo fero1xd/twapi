@@ -75,6 +75,15 @@ export type CreateSubResponse = {
   }[];
 };
 
+export type GetSubscriptionsResponse = {
+  data: {
+    id: string;
+    type: ValidSubscription;
+    version: string;
+    condition: any;
+  }[];
+};
+
 export type BadResponse = {
   error: string;
   status: number;
