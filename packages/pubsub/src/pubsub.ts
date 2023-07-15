@@ -1,19 +1,17 @@
 import { WebSocket, MessageEvent } from "ws";
 import { Logger, logger } from "@twapi/logger";
 import {
-  ErrorHandlerFn,
   ListenerWrap,
   MessageType,
   ParseArgs,
   ParsedMap,
   ParsedTopics,
-  TriggerHandler,
   WebsocketMessage,
 } from "./internal/types";
 import { topicsMap } from "./internal/constants";
 import { Listener } from "./internal/listener";
 import { replacePlaceholders } from "./internal/utils";
-import crypto from "crypto";
+import { v4 } from "uuid";
 
 export class PubSub {
   // Websocket Connection to twitch
@@ -39,6 +37,8 @@ export class PubSub {
   private connectedListener?: () => void;
 
   private listeners: Listener[] = [];
+
+  private pendingListeners: Listener[] = [];
 
   private _responseListeners: {
     handler: (message: WebsocketMessage) => void;
@@ -72,17 +72,12 @@ export class PubSub {
   private _onMessage(e: MessageEvent) {
     const message = JSON.parse(e.data as string) as WebsocketMessage;
 
-    if (message.type === MessageType.PONG && this.deadConnectionTimeout) {
-      clearTimeout(this.deadConnectionTimeout);
-      return;
-    }
-
     switch (message.type) {
       case MessageType.PONG:
         if (this.deadConnectionTimeout) {
           clearTimeout(this.deadConnectionTimeout);
-          break;
         }
+        break;
 
       case MessageType.AUTH_REVOKED:
         const revokedTopics = message.data?.topics;
@@ -105,7 +100,6 @@ export class PubSub {
         if (message.error) {
           this._handleError(message);
         }
-
         break;
 
       case MessageType.MESSAGE:
@@ -119,25 +113,22 @@ export class PubSub {
     }
   }
 
+  /**
+   * Handles error code
+   * @param message Websocket message
+   */
   private _handleError(message: WebsocketMessage) {
     switch (message.error) {
       case "ERR_BADAUTH":
-        this.listeners = this.listeners.filter((l) => {
-          if (l.getParsedTopic() === message.nonce) {
-            this.log.error("Error BAD_AUTH for topic: " + l.getParsedTopic());
-
-            l.triggerErrorHandler(message.error!);
-            return false;
-          }
-
-          return true;
-        });
         break;
       default:
         break;
     }
   }
 
+  /**
+   * Adds a message handler that gets triggered when we get RESPONSE as a message type
+   */
   private _addResponseListener(handler: (message: WebsocketMessage) => void) {
     const listener = { handler };
     this._responseListeners.push(listener);
@@ -148,6 +139,7 @@ export class PubSub {
         1
       );
   }
+
   /**
    * @returns true if connection is not initialized or is in closed state
    */
@@ -181,6 +173,20 @@ export class PubSub {
     );
 
     this.connectedListener?.();
+
+    if (this.pendingListeners.length) {
+      this.log.info("Registering pending listeners");
+      this.pendingListeners.forEach((l) =>
+        this._send({
+          type: MessageType.LISTEN,
+          nonce: l.getNonce(),
+          data: {
+            topics: [l.getParsedTopic()],
+            auth_token: this.oauthToken,
+          },
+        })
+      );
+    }
   }
 
   /**
@@ -210,76 +216,52 @@ export class PubSub {
   public register<T extends ParsedTopics>(
     topic: T,
     data: ParseArgs<ParsedMap[T]>
-  ) {
+  ): ListenerWrap<ParsedMap[T]> {
     const ogTopic = topicsMap[topic];
     const finalTopic = replacePlaceholders(ogTopic, data);
 
-    const listener = new Listener(ogTopic, finalTopic);
-    this.listeners.push(listener);
     const nonce = this._generateNonce();
+    const listener = new Listener(ogTopic, finalTopic, nonce);
 
     this.log.info("Requesting to listen on topic: " + finalTopic);
 
-    return new Promise<ListenerWrap<typeof ogTopic>>((res, rej) => {
-      let timeout: NodeJS.Timeout;
+    let timeout: NodeJS.Timeout;
 
-      const unsubscribe = this._addResponseListener((message) => {
-        if (message.nonce !== nonce) return;
+    const unsubscribe = this._addResponseListener((message) => {
+      if (message.nonce !== nonce) return;
 
-        unsubscribe();
-        if (timeout) clearTimeout(timeout);
+      unsubscribe();
+      if (timeout) clearTimeout(timeout);
 
-        if (message.error) {
-          // throw error
-          this.log.error(
-            "Error listening on the topic: " +
-              finalTopic +
-              ", error: " +
-              message.error
-          );
-          rej(
-            new Error(
-              "Error listening on the topic: " +
-                finalTopic +
-                ", error: " +
-                message.error
-            )
-          );
-          return;
-        }
+      this.pendingListeners = this.pendingListeners.filter(
+        (l) => l.getNonce() !== nonce
+      );
+      if (message.error) {
+        this.log.error(
+          "Error listening on the topic: " +
+            finalTopic +
+            ", error: " +
+            message.error
+        );
 
-        this.log.info("Successfully listening on topic: " + finalTopic);
-        res({
-          onTrigger: (handler) => {
-            listener.setTriggerHandler(handler);
-          },
-          onError: (handler) => {
-            listener.setErrorHandler(handler);
-          },
-          onRevocation: (handler) => {
-            listener.setRevocationHandler(handler);
-          },
-          unsubscribe: () => {
-            this.log.info("Unsubscribing to topic: " + topic);
-            this.listeners = this.listeners.filter(
-              (l) => l.getTopic() === ogTopic
-            );
-            this._send({
-              type: MessageType.UNLISTEN,
-              data: {
-                topics: [finalTopic],
-              },
-            });
-          },
-        });
-      });
+        listener.triggerErrorHandler(message.error);
 
-      timeout = setTimeout(() => {
-        unsubscribe();
-        this.log.error("Timeout while listening on topic: " + finalTopic);
-        rej(new Error("Timeout error"));
-      }, 2000);
+        return;
+      }
 
+      this._addListener(listener);
+      this.log.info("Successfully listening on topic: " + finalTopic);
+    });
+
+    timeout = setTimeout(() => {
+      unsubscribe();
+      this.log.error("Timeout while listening on topic: " + finalTopic);
+    }, 2000);
+
+    if (!this.isConnected()) {
+      this.log.warn("Waiting till connection is established");
+      this.pendingListeners.push(listener);
+    } else {
       this._send({
         type: MessageType.LISTEN,
         nonce,
@@ -288,11 +270,44 @@ export class PubSub {
           auth_token: this.oauthToken,
         },
       });
-    });
+    }
+
+    return {
+      onTrigger: (handler) => {
+        listener.setTriggerHandler(handler);
+      },
+      onError: (handler) => {
+        listener.setErrorHandler(handler);
+      },
+      onRevocation: (handler) => {
+        listener.setRevocationHandler(handler);
+      },
+      unsubscribe: () => {
+        this.log.info("Unsubscribing to topic: " + finalTopic);
+
+        this.listeners = this.listeners.filter((l) => l.getNonce() === nonce);
+
+        const multipleListeners = this.listeners.filter(
+          (l) => l.getParsedTopic() === finalTopic
+        );
+
+        if (multipleListeners.length === 0) {
+          this._send({
+            type: MessageType.UNLISTEN,
+            data: {
+              topics: [finalTopic],
+            },
+          });
+        }
+      },
+    };
   }
 
+  /**
+   * Helper function to generate random nonce
+   */
   private _generateNonce() {
-    return crypto.randomBytes(16).toString("base64");
+    return v4();
   }
 
   /**
@@ -301,5 +316,18 @@ export class PubSub {
    */
   private _send(payload: WebsocketMessage) {
     this.connection?.send(JSON.stringify(payload));
+  }
+
+  public isConnected() {
+    return this.connection !== undefined && this.connection.readyState === 1;
+  }
+
+  private _addListener(listener: Listener) {
+    if (this.listeners.find((l) => listener.getNonce() === l.getNonce())) {
+      return false;
+    }
+
+    this.listeners.push(listener);
+    return true;
   }
 }

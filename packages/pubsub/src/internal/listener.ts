@@ -12,15 +12,18 @@ export class Listener<TTopic extends Topics = any> {
 
   private parsedTopic: string;
 
+  private nonce: string;
+
   private handlerFunction?: TriggerHandler<TTopic>;
 
   private errorHandlerFunc?: ErrorHandlerFn;
 
   private revocationHandler?: () => void;
 
-  constructor(topic: TTopic, parsedTopic: string) {
+  constructor(topic: TTopic, parsedTopic: string, nonce: string) {
     this.topic = topic;
     this.parsedTopic = parsedTopic;
+    this.nonce = nonce;
   }
 
   public setTriggerHandler(handler: TriggerHandler<TTopic>) {
@@ -49,6 +52,10 @@ export class Listener<TTopic extends Topics = any> {
 
   public getTopic() {
     return this.topic;
+  }
+
+  public getNonce() {
+    return this.nonce;
   }
 
   public getParsedTopic() {
