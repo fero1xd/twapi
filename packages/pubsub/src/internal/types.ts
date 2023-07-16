@@ -73,6 +73,9 @@ export type ErrorMessage =
 export type ListenerWrap<T extends Topics> = {
   onTrigger: (handler: TriggerHandler<T>) => void;
   onError: (handler: ErrorHandlerFn) => void;
-  onRevocation: (handler: () => void) => void;
+  onRevocation: (handler: Fn) => void;
+  onTimeout: (handler: Fn) => void;
   unsubscribe: () => void;
 };
+
+export type Fn = () => void;

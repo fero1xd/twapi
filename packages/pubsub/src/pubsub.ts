@@ -6,6 +6,7 @@ import {
   ParseArgs,
   ParsedMap,
   ParsedTopics,
+  Topics,
   WebsocketMessage,
 } from "./internal/types";
 import { topicsMap } from "./internal/constants";
@@ -102,6 +103,13 @@ export class PubSub {
         }
         break;
 
+      case MessageType.RECONNECT:
+        this.log.info("Reconnecting in 5 seconds...");
+        setTimeout(() => {
+          this.reconnect = true;
+          this.connection?.close();
+        }, 5000);
+
       case MessageType.MESSAGE:
         const relatedListeners = this.listeners.filter(
           (l) => l.getParsedTopic() === message.data?.topic
@@ -163,6 +171,64 @@ export class PubSub {
   }
 
   /**
+   * Registers pending listeners after connection gets opened
+   */
+  private _registerPendingListeners() {
+    if (!this.pendingListeners.length) return;
+
+    this.log.info("Registering pending listeners");
+
+    for (let i = this.pendingListeners.length - 1; i >= 0; i--) {
+      const l = this.pendingListeners[i];
+      let timeout: NodeJS.Timeout;
+      const finalTopic = l.getParsedTopic();
+
+      const unsubscribe = this._addResponseListener((message) => {
+        const nonce = l.getNonce();
+
+        if (message.nonce !== nonce) return;
+
+        unsubscribe();
+        if (timeout) clearTimeout(timeout);
+
+        if (message.error) {
+          this.log.error(
+            "Error listening on the topic: " +
+              finalTopic +
+              ", error: " +
+              message.error
+          );
+
+          l.triggerErrorHandler(message.error);
+
+          return;
+        }
+
+        this._addListener(l);
+
+        this.log.info("Successfully listening on topic: " + finalTopic);
+      });
+
+      timeout = setTimeout(() => {
+        unsubscribe();
+        this.log.error("Timeout while listening on topic: " + finalTopic);
+        l.triggerTimeoutHandler();
+      }, 2000);
+
+      this._send({
+        type: MessageType.LISTEN,
+        nonce: l.getNonce(),
+        data: {
+          topics: [l.getParsedTopic()],
+          auth_token: this.oauthToken,
+        },
+      });
+
+      this.pendingListeners.splice(i, 1);
+    }
+  }
+
+  /**
    * Initializes heartbeat interval when connection gets opened
    */
   private _onOpen() {
@@ -173,20 +239,7 @@ export class PubSub {
     );
 
     this.connectedListener?.();
-
-    if (this.pendingListeners.length) {
-      this.log.info("Registering pending listeners");
-      this.pendingListeners.forEach((l) =>
-        this._send({
-          type: MessageType.LISTEN,
-          nonce: l.getNonce(),
-          data: {
-            topics: [l.getParsedTopic()],
-            auth_token: this.oauthToken,
-          },
-        })
-      );
-    }
+    this._registerPendingListeners();
   }
 
   /**
@@ -225,43 +278,41 @@ export class PubSub {
 
     this.log.info("Requesting to listen on topic: " + finalTopic);
 
-    let timeout: NodeJS.Timeout;
-
-    const unsubscribe = this._addResponseListener((message) => {
-      if (message.nonce !== nonce) return;
-
-      unsubscribe();
-      if (timeout) clearTimeout(timeout);
-
-      this.pendingListeners = this.pendingListeners.filter(
-        (l) => l.getNonce() !== nonce
-      );
-      if (message.error) {
-        this.log.error(
-          "Error listening on the topic: " +
-            finalTopic +
-            ", error: " +
-            message.error
-        );
-
-        listener.triggerErrorHandler(message.error);
-
-        return;
-      }
-
-      this._addListener(listener);
-      this.log.info("Successfully listening on topic: " + finalTopic);
-    });
-
-    timeout = setTimeout(() => {
-      unsubscribe();
-      this.log.error("Timeout while listening on topic: " + finalTopic);
-    }, 2000);
-
     if (!this.isConnected()) {
       this.log.warn("Waiting till connection is established");
       this.pendingListeners.push(listener);
     } else {
+      let timeout: NodeJS.Timeout;
+
+      const unsubscribe = this._addResponseListener((message) => {
+        if (message.nonce !== nonce) return;
+
+        unsubscribe();
+        if (timeout) clearTimeout(timeout);
+
+        if (message.error) {
+          this.log.error(
+            "Error listening on the topic: " +
+              finalTopic +
+              ", error: " +
+              message.error
+          );
+
+          listener.triggerErrorHandler(message.error);
+
+          return;
+        }
+
+        this._addListener(listener);
+        this.log.info("Successfully listening on topic: " + finalTopic);
+      });
+
+      timeout = setTimeout(() => {
+        unsubscribe();
+        this.log.error("Timeout while listening on topic: " + finalTopic);
+        listener.triggerTimeoutHandler();
+      }, 2000);
+
       this._send({
         type: MessageType.LISTEN,
         nonce,
@@ -272,6 +323,14 @@ export class PubSub {
       });
     }
 
+    return this._listenerWrap<ParsedMap[typeof topic]>(listener, nonce);
+  }
+
+  private _listenerWrap<T extends Topics>(
+    listener: Listener,
+    nonce: string
+  ): ListenerWrap<T> {
+    const finalTopic = listener.getParsedTopic();
     return {
       onTrigger: (handler) => {
         listener.setTriggerHandler(handler);
@@ -282,10 +341,13 @@ export class PubSub {
       onRevocation: (handler) => {
         listener.setRevocationHandler(handler);
       },
+      onTimeout: (handler) => {
+        listener.setTimeoutHandler(handler);
+      },
       unsubscribe: () => {
         this.log.info("Unsubscribing to topic: " + finalTopic);
 
-        this.listeners = this.listeners.filter((l) => l.getNonce() === nonce);
+        this.listeners = this.listeners.filter((l) => l.getNonce() !== nonce);
 
         const multipleListeners = this.listeners.filter(
           (l) => l.getParsedTopic() === finalTopic
