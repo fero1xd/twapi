@@ -118,6 +118,9 @@ export class PubSub {
         relatedListeners.forEach((l) => l.triggerHandler({ test: true }));
 
         const payload = message.data?.message;
+
+        console.log(message.data);
+        console.log(JSON.parse(message.data?.message));
     }
   }
 

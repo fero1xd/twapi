@@ -54,12 +54,6 @@ export type ParsedMap = {
   [K in Topics as ParseTopic<GetBeforeDot<K>>]: K;
 };
 
-export type TopicDataMap = {
-  [K in Topics]: {
-    test: true;
-  };
-};
-
 export type TriggerHandler<T extends Topics> = (data: TopicDataMap[T]) => void;
 
 export type ErrorHandlerFn = (message: ErrorMessage) => void;
@@ -79,3 +73,99 @@ export type ListenerWrap<T extends Topics> = {
 };
 
 export type Fn = () => void;
+
+// ------- Event Payloads ---------
+export type TopicDataMap = Prettify<
+  {
+    [K in Topics as K]: {
+      test: true;
+    };
+  } & WhisperEvent &
+    UserModerationNotification &
+    AutoModQueueMessage
+>;
+
+type Emote = {
+  start: number;
+  end: number;
+  id: number;
+};
+
+type Badge = {
+  id: string;
+  version: string;
+};
+
+type WhisperEvent = {
+  "whispers.<user_id>": {
+    type: "whisper_sent" | "whisper_received";
+    data_object: {
+      message_id: string;
+      id: number;
+      thread_id: string;
+      body: string;
+      sent_ts: number;
+      from_id: number;
+      tags: {
+        login: string;
+        display_name: string;
+        color: string;
+        emotes: Emote[];
+        badges: Badge[];
+      };
+      recipient: {
+        id: number;
+        username: string;
+        display_name: string;
+        color: string;
+        badges: Badge[];
+        emotes: Emote[];
+      };
+      nonce: string;
+    };
+  };
+};
+
+type UserModerationNotification = {
+  "user-moderation-notifications.<current_user_id>.<channel_id>": {
+    type: "automod_caught_message";
+    data: {
+      message_id: string;
+      status: "DENIED" | "PENDING" | "ALLOWED" | "EXPIRED";
+    };
+  };
+};
+
+type AutoModQueueMessage = {
+  type: "automod_caught_message";
+  data: {
+    message: {
+      id: string;
+      content: {
+        text: string;
+        fragments: {
+          text: string;
+          automod?: {
+            topics: Record<string, number>;
+          };
+        }[];
+      };
+
+      sender: {
+        user_id: string;
+        login: string;
+        display_name: string;
+        chat_color?: string;
+      };
+      sent_at: string;
+    };
+    content_classification: {
+      category: string;
+      level: number;
+    };
+    status: "PENDING" | "ALLOWED" | "DENIED" | "EXPIRED";
+    reason_code: string;
+    resolver_id: string;
+    resolver_login: string;
+  };
+};
