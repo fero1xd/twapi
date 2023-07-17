@@ -24,6 +24,7 @@
     "@types/node": "^20.4.2",
     "@types/uuid": "^9.0.2",
     "@types/ws": "^8.5.5",
+    "isomorphic-ws": "^5.0.0",
     "tsup": "^7.1.0",
     "uuid": "^9.0.0",
     "ws": "^8.13.0"

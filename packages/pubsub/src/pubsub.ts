@@ -1,4 +1,4 @@
-import { WebSocket, MessageEvent } from "ws";
+import WebSocket, { MessageEvent } from "isomorphic-ws";
 import { Logger, logger } from "@twapi/logger";
 import {
   ListenerWrap,

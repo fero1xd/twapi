@@ -1,6 +1,6 @@
 import { Logger, logger } from "@twapi/logger";
 import axios from "axios";
-import { CloseEvent, MessageEvent, WebSocket } from "ws";
+import WebSocket, { MessageEvent, CloseEvent } from "isomorphic-ws";
 import { ConnectionClosed, CreateSubscriptionRequestFailed } from "./errors";
 import { createSubscription, deleteSubscription } from "./internal/api";
 import { subRemap } from "./internal/constants";
