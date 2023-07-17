@@ -1,11 +1,13 @@
 import WebSocket, { MessageEvent } from "isomorphic-ws";
 import { Logger, logger } from "@twapi/logger";
 import {
+  Fn,
   ListenerWrap,
   MessageType,
   ParseArgs,
   ParsedMap,
   ParsedTopics,
+  ResponseListener,
   Topics,
   WebsocketMessage,
 } from "./internal/types";
@@ -33,17 +35,23 @@ export class PubSub {
   // Timeout for keeping track of dead connection, so that we can reconnect
   private deadConnectionTimeout?: NodeJS.Timeout;
 
+  // Boolean to indicate if we have to reconnect on connection close
   private reconnect = false;
 
-  private connectedListener?: () => void;
+  // Triggered when connection gets opened to twitch
+  private connectedListener?: Fn;
 
+  // Gets triggered before attempt to reconnect
+  private reconnectListener?: Fn;
+
+  // Client listen to topics and listeners get added here
   private listeners: Listener[] = [];
 
+  // Listeners are added here when connection is not opened
   private pendingListeners: Listener[] = [];
 
-  private _responseListeners: {
-    handler: (message: WebsocketMessage) => void;
-  }[] = [];
+  // Response listener for incomming pubsub message
+  private _responseListeners: ResponseListener[] = [];
 
   /**
    * --------CONSTRUCTOR-------
@@ -62,7 +70,10 @@ export class PubSub {
       this.log.error("Cannot open new connection right now");
       return;
     }
-    this.connectedListener = connectedListener;
+
+    if (!this.connectedListener) {
+      this.connectedListener = connectedListener;
+    }
 
     this.connection = new WebSocket("wss://pubsub-edge.twitch.tv");
     this.connection.onopen = this._onOpen.bind(this);
@@ -70,6 +81,10 @@ export class PubSub {
     this.connection.onmessage = this._onMessage.bind(this);
   }
 
+  /**
+   * Handles raw incomming pubsub message from twitch
+   * @param e Websocket message event
+   */
   private _onMessage(e: MessageEvent) {
     const message = JSON.parse(e.data as string) as WebsocketMessage;
 
@@ -104,23 +119,20 @@ export class PubSub {
         break;
 
       case MessageType.RECONNECT:
-        this.log.info("Reconnecting in 5 seconds...");
+        this.log.info("Reconnecting in 3 seconds...");
         setTimeout(() => {
           this.reconnect = true;
           this.connection?.close();
-        }, 5000);
+        }, 3000);
 
       case MessageType.MESSAGE:
         const relatedListeners = this.listeners.filter(
           (l) => l.getParsedTopic() === message.data?.topic
         );
 
-        relatedListeners.forEach((l) => l.triggerHandler({ test: true }));
+        const payload = JSON.parse(message.data?.message);
 
-        const payload = message.data?.message;
-
-        console.log(message.data);
-        console.log(JSON.parse(message.data?.message));
+        relatedListeners.forEach((l) => l.triggerHandler(payload));
     }
   }
 
@@ -169,6 +181,8 @@ export class PubSub {
     if (this.reconnect) {
       this.reconnect = false;
       this.log.warn("Reconnecting...");
+      this.reconnectListener?.();
+
       this.run();
     }
   }
@@ -183,6 +197,7 @@ export class PubSub {
 
     for (let i = this.pendingListeners.length - 1; i >= 0; i--) {
       const l = this.pendingListeners[i];
+
       let timeout: NodeJS.Timeout;
       const finalTopic = l.getParsedTopic();
 
@@ -201,6 +216,11 @@ export class PubSub {
               ", error: " +
               message.error
           );
+          if (message.error === "ERR_BADAUTH") {
+            this.log.error(
+              "Please check if your access token has required oauth scopes for this topic"
+            );
+          }
 
           l.triggerErrorHandler(message.error);
 
@@ -329,6 +349,13 @@ export class PubSub {
     return this._listenerWrap<ParsedMap[typeof topic]>(listener, nonce);
   }
 
+  /**
+   * Wraps the actual listener object
+   *
+   * @param listener The listener instance
+   * @param nonce Random string used to confirm stuff
+   * @returns A wrapper to interact with the underneath listener
+   */
   private _listenerWrap<T extends Topics>(
     listener: Listener,
     nonce: string
@@ -356,6 +383,8 @@ export class PubSub {
           (l) => l.getParsedTopic() === finalTopic
         );
 
+        // Pubsub sends a notification only once even if you have subscribed to the event multiple times,
+        // But to support multiple listeners we will only send an UNLISTEN command when we dont have anymore listener for this topic
         if (multipleListeners.length === 0) {
           this._send({
             type: MessageType.UNLISTEN,
@@ -383,10 +412,10 @@ export class PubSub {
     this.connection?.send(JSON.stringify(payload));
   }
 
-  public isConnected() {
-    return this.connection !== undefined && this.connection.readyState === 1;
-  }
-
+  /**
+   * Helper function to add listener in order to prevent duplicate listeners
+   * @param listener The listener object to add
+   */
   private _addListener(listener: Listener) {
     if (this.listeners.find((l) => listener.getNonce() === l.getNonce())) {
       return false;
@@ -394,5 +423,29 @@ export class PubSub {
 
     this.listeners.push(listener);
     return true;
+  }
+
+  /**
+   * Sets the connected listener
+   * @param handler A callback function that will only run on the first successfull connect
+   */
+  public onConnected(handler: Fn) {
+    this.connectedListener = handler;
+  }
+
+  /**
+   * Sets the connected listener
+   * @param handler A callback function that will always run before an attempt to reconnect
+   */
+  public onReconnect(handler: Fn) {
+    this.reconnectListener = handler;
+  }
+
+  /**
+   * Checks if we are connected to twitch
+   * @returns true if connection is in open state
+   */
+  public isConnected() {
+    return this.connection !== undefined && this.connection.readyState === 1;
   }
 }

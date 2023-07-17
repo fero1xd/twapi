@@ -3,7 +3,7 @@ import { ParsedMap } from "./types";
 export const topics = [
   "channel-bits-events-v2.<channel_id>",
   "channel-bits-badge-unlocks.<channel_id>",
-  // "channel-points-channel-v1.<channel_id>",
+  "channel-points-channel-v1.<channel_id>",
   "channel-subscribe-events-v1.<channel_id>",
   "automod-queue.<moderator_id>.<channel_id>",
   "chat_moderator_actions.<user_id>.<channel_id>",
@@ -35,3 +35,5 @@ for (const t of topics) {
   // @ts-ignore
   topicsMap[parsedTopic] = t;
 }
+
+topicsMap["channelRedemption"] = topics[2];

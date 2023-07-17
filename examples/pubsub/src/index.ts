@@ -3,12 +3,16 @@ import "dotenv/config";
 
 const pubusb = new PubSub(process.env.SAMPLE_OAUTH_TOKEN!);
 
-const listener = pubusb.register("automodQueue", {
-  moderator_id: 894734139,
-  channel_id: 894734139,
+const listener = pubusb.register("chatModeratorActions", {
+  channel_id: 642902413,
+  user_id: 642902413,
 });
 
-listener.onTrigger((d) => {});
+listener.onTrigger((d) => {
+  if (d.type === "moderator_added") {
+    console.log(d.data);
+  }
+});
 
 listener.onRevocation(() => {
   console.log("revoked");
