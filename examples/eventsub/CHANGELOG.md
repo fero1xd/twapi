@@ -1,5 +1,12 @@
 # @twapi/eventsub-example
 
+## 1.0.4
+
+### Patch Changes
+
+- Updated dependencies [9971d4c]
+  - @twapi/eventsub@0.2.1
+
 ## 1.0.3
 
 ### Patch Changes
