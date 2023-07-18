@@ -80,13 +80,13 @@ export type ErrorMessage =
   | "ERR_SERVER"
   | "ERR_BADTOPIC";
 
-export type ListenerWrap<T extends Topics> = {
+export interface ListenerWrapType<T extends Topics> {
   onTrigger: (handler: TriggerHandler<T>) => void;
   onError: (handler: ErrorHandlerFn) => void;
   onRevocation: (handler: Fn) => void;
   onTimeout: (handler: Fn) => void;
   unsubscribe: () => void;
-};
+}
 
 export type Fn = () => void;
 

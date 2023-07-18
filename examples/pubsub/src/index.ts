@@ -9,9 +9,8 @@ const listener = pubusb.register("chatModeratorActions", {
 });
 
 listener.onTrigger((d) => {
-  if (d.type === "moderator_added") {
-    console.log(d.data);
-  }
+  console.log(d.data);
+  listener.unsubscribe();
 });
 
 listener.onRevocation(() => {

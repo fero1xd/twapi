@@ -1,20 +1,19 @@
-import WebSocket, { MessageEvent } from "isomorphic-ws";
 import { Logger, logger } from "@twapi/logger";
+import WebSocket, { MessageEvent } from "isomorphic-ws";
+import { v4 } from "uuid";
+import { topicsMap } from "./internal/constants";
+import { Listener } from "./internal/listener";
+import { ListenerWrap } from "./internal/listenerWrap";
 import {
   Fn,
-  ListenerWrap,
   MessageType,
   ParseArgs,
   ParsedMap,
   ParsedTopics,
   ResponseListener,
-  Topics,
   WebsocketMessage,
 } from "./internal/types";
-import { topicsMap } from "./internal/constants";
-import { Listener } from "./internal/listener";
 import { replacePlaceholders } from "./internal/utils";
-import { v4 } from "uuid";
 
 export class PubSub {
   // Websocket Connection to twitch
@@ -346,55 +345,37 @@ export class PubSub {
       });
     }
 
-    return this._listenerWrap<ParsedMap[typeof topic]>(listener, nonce);
+    return new ListenerWrap<ParsedMap[typeof topic]>(listener, this);
   }
 
   /**
-   * Wraps the actual listener object
+   * Use this method to unregister any listener
    *
-   * @param listener The listener instance
-   * @param nonce Random string used to confirm stuff
-   * @returns A wrapper to interact with the underneath listener
+   * @param listener The actual wrapped listener
    */
-  private _listenerWrap<T extends Topics>(
-    listener: Listener,
-    nonce: string
-  ): ListenerWrap<T> {
+  public removeListener(listener: ListenerWrap<any>) {
     const finalTopic = listener.getParsedTopic();
-    return {
-      onTrigger: (handler) => {
-        listener.setTriggerHandler(handler);
-      },
-      onError: (handler) => {
-        listener.setErrorHandler(handler);
-      },
-      onRevocation: (handler) => {
-        listener.setRevocationHandler(handler);
-      },
-      onTimeout: (handler) => {
-        listener.setTimeoutHandler(handler);
-      },
-      unsubscribe: () => {
-        this.log.info("Unsubscribing to topic: " + finalTopic);
 
-        this.listeners = this.listeners.filter((l) => l.getNonce() !== nonce);
+    this.log.info("Unsubscribing to topic: " + finalTopic);
 
-        const multipleListeners = this.listeners.filter(
-          (l) => l.getParsedTopic() === finalTopic
-        );
+    this.listeners = this.listeners.filter(
+      (l) => l.getNonce() !== listener.getNonce()
+    );
 
-        // Pubsub sends a notification only once even if you have subscribed to the event multiple times,
-        // But to support multiple listeners we will only send an UNLISTEN command when we dont have anymore listener for this topic
-        if (multipleListeners.length === 0) {
-          this._send({
-            type: MessageType.UNLISTEN,
-            data: {
-              topics: [finalTopic],
-            },
-          });
-        }
-      },
-    };
+    const multipleListeners = this.listeners.filter(
+      (l) => l.getParsedTopic() === finalTopic
+    );
+
+    // Pubsub sends a notification only once even if you have subscribed to the event multiple times,
+    // But to support multiple listeners we will only send an UNLISTEN command when we dont have anymore listener for this topic
+    if (multipleListeners.length === 0) {
+      this._send({
+        type: MessageType.UNLISTEN,
+        data: {
+          topics: [finalTopic],
+        },
+      });
+    }
   }
 
   /**
