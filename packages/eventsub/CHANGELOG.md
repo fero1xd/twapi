@@ -1,5 +1,11 @@
 # @twapi/eventsub
 
+## 0.2.1
+
+### Patch Changes
+
+- 9971d4c: chore(eventsub): using isomorphic-ws
+
 ## 0.2.0
 
 ### Minor Changes
