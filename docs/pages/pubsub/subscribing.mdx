@@ -1,0 +1,18 @@
+import { Callout } from "nextra-theme-docs";
+
+
+# Subscribing
+
+There are several topics you can listen on to using the Pubsub system.
+To subscribe to any topic, call the `register()` method of the pubsub client with two arguments.
+**First** the topic name, and **second** the condition related to that topic
+
+```ts copy
+const listener = pubsub.register("chatModeratorActions", {
+    channel_id: 1234567,
+    user_id: 1234567,
+});
+```
+<Callout type="info">
+    If you are using typescript then you will have all the **code suggestions** for the events and their related conditions. **Condition** is simply specifc data required to subscribe to a topic.
+</Callout>

@@ -1,3 +1,7 @@
 {
-  "quickstart": "Quick Start"
+  "introduction": "Introduction",
+  "quickstart": "Quick Start",
+  "subscribing": "Subscribing",
+  "listener": "Listener",
+  "auth-revocation": "Auth Revocation"
 }

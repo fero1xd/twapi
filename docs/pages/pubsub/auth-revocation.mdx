@@ -1,0 +1,23 @@
+import { Callout } from "nextra-theme-docs";
+
+
+# Auth Revocation
+
+An authorization can be revoked at any time for a number of reasons, such a user disconnecting from an app through https://www.twitch.tv/settings/connections.
+Topics associated with the authorization will be unlistened to.
+
+The listener provides an revocation event to register a callback function on
+```ts copy
+const listener = pubsub.register("chatModeratorActions", {
+  channel_id: 1234567,
+  user_id: 1234567,
+});
+
+listener.onRevocation(() => {
+    console.log("[-] Auth Revoked")
+})
+```
+
+<Callout type="warning">
+You will no longer receive events if your subscription gets revoked
+</Callout>

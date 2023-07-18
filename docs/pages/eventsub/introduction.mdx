@@ -1,0 +1,22 @@
+import { Callout } from "nextra-theme-docs";
+
+# Introduction
+
+EventSub subscriptions let your application listen for events that happen on Twitch. When an event occurs for one of your subscriptions, Twitch sends you a notification. For example, you can receive a notification when:
+
+- A broadcaster goes online
+- A broadcaster gets a new follower
+- A broadcaster gets a new subscriber
+- A user cheered in a channel
+- A user redeemed Channel Points
+
+Twitch support the following transport methods:
+
+- Webhook
+- WebSocket
+
+<Callout type="info">
+We use **WebSocket** as an only transport right now! 
+</Callout>
+
+For more information please visit the official [twitch documentation](https://dev.twitch.tv/docs/eventsub)

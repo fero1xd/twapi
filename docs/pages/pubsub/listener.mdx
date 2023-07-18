@@ -1,0 +1,42 @@
+import { Callout} from "nextra-theme-docs";
+
+
+# Listener
+
+Whenever you subscribe to a topic using the `register()` method on the pubsub client, it will return a **wrapper** around the actual
+internal listener class.
+
+The **wrapper** class provides some useful events to register a callback function on.
+
+## Usage
+
+Here is the example of all the events you can listen on
+
+```ts copy filename='src/index.ts'
+const listener = pubsub.register("chatModeratorActions", {
+  channel_id: 1234567,
+  user_id: 1234567,
+});
+
+listener.onTrigger((data) => {
+    console.log(data);
+});
+
+listener.onRevocation(() => {
+  console.log("[-] Auth Revoked")
+});
+
+listener.onError((error) => {
+  console.log(error);
+});
+
+listener.onTimeout(() => {
+  console.log("[+] Timed out");
+});
+
+listener.unsubscribe();
+```
+
+<Callout type="info">
+If you no longer want to listen on an topic, you should unsubscribe from that topic that results in no unused listeners.
+</Callout>

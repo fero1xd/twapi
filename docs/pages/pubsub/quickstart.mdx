@@ -1,7 +1,84 @@
+import { Callout, Steps, Tabs, Tab } from "nextra-theme-docs";
+
 # Getting started with Twitch PubSub
 
-```ts
-import { EventSub } from "@twapi/eventsub";
+You can also find a demo in the main github [repository](https://github.com/fero1xd/twapi/tree/master/examples/pubsub)
 
-const client = new Client("oauth:xxxxx");
+<Steps>
+
+### Install the package
+Use any package manager of your choice.
+<Tabs items={["npm", "yarn", "pnpm"]}>
+  <Tab>
+  ```console copy 
+  npm install @twapi/pubsub 
+  ```
+  </Tab>
+  <Tab>
+  ```console copy 
+  yarn add @twapi/pubsub 
+  ```
+  </Tab>
+  <Tab>
+  ```console copy 
+  pnpm install @twapi/pubsub 
+  ```
+  </Tab>
+</Tabs>
+
+### Setup Typescript
+
+This step is **optional** but highly recommended.
+
+```console copy
+tsc --init
 ```
+
+### Get Credentials
+For using twitch's Pubsub system you will need to have an user access token that will be used to represent the user subscribing to topics
+
+#### Links
+Follow these links to obtain your own credentials
+- [Twitch OAuth](https://dev.twitch.tv/docs/authentication/getting-tokens-oauth/)
+
+
+### Connecting to Twitch Pubsub
+```ts copy filename="src/index.ts"
+import { PubSub } from '@twapi/pubsub'
+
+const SAMPLE_OAUTH_TOKEN = ".......";
+const pubsub = new PubSub(SAMPLE_OAUTH_TOKEN);
+
+pubsub.onConnected(() => {
+  console.log("[+] Successfully Connected")
+})
+
+pubsub.onReconnect(() => {
+  console.log("[+] Going to reconnect")
+})
+
+pubsub.run();
+```
+
+<Callout type="warning">
+  - The callback function passed to `onConnected()` method is only triggered once, not on
+  reconnects.
+  - The callback function passed to `onReconnect()` method is triggered before an actual attempt to reconnect
+</Callout>
+
+
+### Subscribing to Topics
+There are various topics that you can listen on for a full list please checkout twitch's official [pubsub documentation](https://dev.twitch.tv/docs/pubsub/)
+
+```ts copy filename='src/index.ts'
+const listener = pubsub.register("chatModeratorActions", {
+  channel_id: 1234567,
+  user_id: 1234567,
+});
+
+listener.onTrigger((data) => {
+    console.log(data);
+    listener.unsubscribe();
+});
+```
+</Steps>
