@@ -32,6 +32,10 @@ export class ListenerWrap<T extends Topics> implements ListenerWrapType<T> {
     this._listener.setTimeoutHandler(handler);
   }
 
+  onRegistered(handler: Fn) {
+    this._listener.setRegisteredHandler(handler);
+  }
+
   unsubscribe() {
     this._pubsub.removeListener(this);
   }

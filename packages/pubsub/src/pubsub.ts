@@ -5,6 +5,7 @@ import { topicsMap } from "./internal/constants";
 import { Listener } from "./internal/listener";
 import { ListenerWrap } from "./internal/listenerWrap";
 import {
+  ErrorMessage,
   Fn,
   MessageType,
   ParseArgs,
@@ -51,6 +52,9 @@ export class PubSub {
 
   // Response listener for incomming pubsub message
   private _responseListeners: ResponseListener[] = [];
+
+  // Global error handler
+  private _errorHandler?: (error: ErrorMessage) => void;
 
   /**
    * --------CONSTRUCTOR-------
@@ -136,16 +140,19 @@ export class PubSub {
   }
 
   /**
+   * Sets the global error handler
+   * @param handler Global error handler
+   */
+  public onError(handler: (error: ErrorMessage) => void) {
+    this._errorHandler = handler;
+  }
+
+  /**
    * Handles error code
    * @param message Websocket message
    */
   private _handleError(message: WebsocketMessage) {
-    switch (message.error) {
-      case "ERR_BADAUTH":
-        break;
-      default:
-        break;
-    }
+    this._errorHandler?.(message.error!);
   }
 
   /**
@@ -403,6 +410,8 @@ export class PubSub {
     }
 
     this.listeners.push(listener);
+    listener.triggerRegisteredHandler();
+
     return true;
   }
 

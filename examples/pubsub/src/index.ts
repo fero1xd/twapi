@@ -17,8 +17,8 @@ listener.onRevocation(() => {
   console.log("revoked");
 });
 
-listener.onError((error) => {
-  console.log(error);
+listener.onRegistered(() => {
+  console.log("registered");
 });
 
 listener.onTimeout(() => {

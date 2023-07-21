@@ -23,6 +23,8 @@ export class Listener<TTopic extends Topics = any> {
 
   private timeoutHandler?: Fn;
 
+  private registeredHandler?: Fn;
+
   constructor(topic: TTopic, parsedTopic: string, nonce: string) {
     this.topic = topic;
     this.parsedTopic = parsedTopic;
@@ -45,6 +47,10 @@ export class Listener<TTopic extends Topics = any> {
     this.timeoutHandler = handler;
   }
 
+  public setRegisteredHandler(handler: Fn) {
+    this.registeredHandler = handler;
+  }
+
   public triggerHandler(data: TopicDataMap[TTopic]) {
     this.handlerFunction?.(data);
   }
@@ -59,6 +65,10 @@ export class Listener<TTopic extends Topics = any> {
 
   public triggerTimeoutHandler() {
     this.timeoutHandler?.();
+  }
+
+  public triggerRegisteredHandler() {
+    this.registeredHandler?.();
   }
 
   public getTopic() {
