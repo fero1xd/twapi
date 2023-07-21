@@ -53,6 +53,10 @@ pubsub.onConnected(() => {
   console.log("[+] Successfully Connected")
 })
 
+pubsub.onError((error) => {
+  console.log("[-] Error: " + error)
+})
+
 pubsub.onReconnect(() => {
   console.log("[+] Going to reconnect")
 })

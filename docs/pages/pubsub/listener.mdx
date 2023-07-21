@@ -1,5 +1,4 @@
-import { Callout} from "nextra-theme-docs";
-
+import { Callout } from "nextra-theme-docs";
 
 # Listener
 
@@ -18,12 +17,16 @@ const listener = pubsub.register("chatModeratorActions", {
   user_id: 1234567,
 });
 
+listener.onRegistered(() => {
+  console.log("registered");
+});
+
 listener.onTrigger((data) => {
-    console.log(data);
+  console.log(data);
 });
 
 listener.onRevocation(() => {
-  console.log("[-] Auth Revoked")
+  console.log("[-] Auth Revoked");
 });
 
 listener.onError((error) => {
@@ -38,5 +41,6 @@ listener.unsubscribe();
 ```
 
 <Callout type="info">
-If you no longer want to listen on an topic, you should unsubscribe from that topic that results in no unused listeners.
+  If you no longer want to listen on an topic, you should unsubscribe from that
+  topic that results in no unused listeners.
 </Callout>
