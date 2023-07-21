@@ -40,6 +40,7 @@ export class PubSub {
 
   // Triggered when connection gets opened to twitch
   private connectedListener?: Fn;
+  private hasCalled: boolean = false;
 
   // Gets triggered before attempt to reconnect
   private reconnectListener?: Fn;
@@ -267,7 +268,10 @@ export class PubSub {
       this.heartbeatIntervalMs
     );
 
-    this.connectedListener?.();
+    if (!this.hasCalled) {
+      this.hasCalled = true;
+      this.connectedListener?.();
+    }
     this._registerPendingListeners();
   }
 

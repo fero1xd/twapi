@@ -4,7 +4,6 @@ import {
   RevocationReason,
   ValidSubscription,
 } from "./types";
-import { v4 } from "uuid";
 import { CreateSubscriptionRequestFailed } from "../errors";
 
 export class Listener<

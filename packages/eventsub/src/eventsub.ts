@@ -178,21 +178,18 @@ export class EventSub {
 
       this.log.error("Reason: " + reason);
 
-      const revokedSubs = this.listeners.filter(
-        (l) =>
+      this.listeners = this.listeners.filter((l) => {
+        if (
           l.getSubscriptionName() ===
           revocationMessage.getMeta().subscription_type
-      );
+        ) {
+          l.triggerRevocationHandler(reason as RevocationReason);
 
-      revokedSubs.forEach((s) =>
-        s.triggerRevocationHandler(reason as RevocationReason)
-      );
+          return false;
+        }
 
-      this.listeners = this.listeners.filter(
-        (l) =>
-          l.getSubscriptionName() !==
-          revocationMessage.getMeta().subscription_type
-      );
+        return true;
+      });
 
       return;
     }

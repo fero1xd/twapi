@@ -150,6 +150,7 @@ type Without<T, K extends keyof T> = {
 };
 
 // ---------- LISTENERS --------------
+
 export type ConnectedListener = (sessionId: string) => void;
 
 export type ReplaceDots<T extends string> =
