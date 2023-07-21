@@ -1,0 +1,28 @@
+{
+  "name": "@twapi/api",
+  "version": "0.0.0",
+  "description": "Interact with twitch's hellix Api",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "private": true,
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "dev": "tsup src/index.ts --format cjs,esm --dts --watch",
+    "build": "tsup src/index.ts --format cjs,esm --dts",
+    "lint": "eslint \"**/*.{ts,tsx}\" --max-warnings 0",
+    "typecheck": "tsc --noEmit"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@twapi/logger": "workspace:^",
+    "@twapi/tsconfig": "workspace:^",
+    "@types/node": "^20.4.2",
+    "cross-fetch": "^4.0.0",
+    "tsup": "^7.1.0"
+  }
+}

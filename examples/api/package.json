@@ -1,7 +1,7 @@
 {
-  "name": "@twapi/pubsub-example",
-  "version": "1.0.0",
-  "description": "An example showing how to use @twapi/pubsub to interact with twitch pubsub",
+  "name": "@twapi/api-example",
+  "version": "0.0.0",
+  "description": "An example showing how to use @twapi/api to interact with twitch's helix api",
   "main": "index.js",
   "private": true,
   "scripts": {
@@ -12,12 +12,10 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@twapi/api": "workspace:^",
     "@twapi/tsconfig": "workspace:^",
     "@types/node": "^20.4.2",
     "dotenv": "^16.3.1",
     "tsup": "^7.1.0"
-  },
-  "dependencies": {
-    "@twapi/pubsub": "workspace:^"
   }
 }

@@ -10,7 +10,7 @@ const myFormat = (name?: string) => {
 
 winston.format.combine(winston.format.colorize(), winston.format.json());
 
-export const logger = (name?: string) => {
+export const createLogger = (name?: string) => {
   return winston.createLogger({
     level: "info",
     format: combine(

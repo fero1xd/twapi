@@ -1,4 +1,4 @@
-import { Logger, logger } from "@twapi/logger";
+import { Logger, createLogger } from "@twapi/logger";
 import WebSocket, { MessageEvent } from "isomorphic-ws";
 import { v4 } from "uuid";
 import { topicsMap } from "./internal/constants";
@@ -58,7 +58,7 @@ export class PubSub {
    */
   constructor(oauthToken: string) {
     this.oauthToken = oauthToken;
-    this.log = logger("pubsub");
+    this.log = createLogger("pubsub");
   }
 
   /**

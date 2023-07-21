@@ -1,4 +1,4 @@
-import { Logger, logger } from "@twapi/logger";
+import { Logger, createLogger } from "@twapi/logger";
 import axios from "axios";
 import WebSocket, { MessageEvent, CloseEvent } from "isomorphic-ws";
 import { ConnectionClosed, CreateSubscriptionRequestFailed } from "./errors";
@@ -65,7 +65,7 @@ export class EventSub {
   constructor(oauthToken: string, clientId: string) {
     this.oauthToken = oauthToken;
     this.clientId = clientId;
-    this.log = logger("eventsub");
+    this.log = createLogger("eventsub");
   }
 
   /**
