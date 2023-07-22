@@ -7,4 +7,11 @@ const credentials = new ApiCredentials(
   "dawd"
 );
 
-const client = new ApiClient(credentials);
+const main = async () => {
+  const client = new ApiClient(credentials);
+
+  const res = await client.channel.getChannelInformation("64202413");
+  console.log(res);
+};
+
+main();

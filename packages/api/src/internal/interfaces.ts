@@ -15,3 +15,7 @@ export interface QueueItem {
   resolve: (res: any) => void;
   reject: (err: Error) => void;
 }
+
+export interface HelixResponse<T> {
+  data: T[];
+}

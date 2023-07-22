@@ -6,6 +6,7 @@ export interface RateLimiterConfig {
   performRequest: (config: RequestConfig) => any;
 }
 
+// ^_^ https://github.com/d-fischer/rate-limiter
 export class RateLimiter {
   private readonly gap;
 
