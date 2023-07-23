@@ -1,6 +1,8 @@
-import { HelixError } from "./errors";
+import { HelixError } from "../errors";
 import { RequestConfig } from "./interfaces";
 import fetch, { Headers } from "cross-fetch";
+
+const HELIX_URL = "https://api.twitch.tv/helix/";
 
 export default async function callApi(
   config: RequestConfig,
@@ -8,20 +10,31 @@ export default async function callApi(
   appAccessToken: string,
   oauthToken?: string
 ) {
-  const { auth, method, url, body } = config;
+  const { oauth, method, url, body } = config;
 
   const headers = new Headers();
 
   headers.set("Client-Id", clientId);
+  if (body) {
+    headers.set("Content-Type", "application/json");
+  }
 
-  if (auth) {
+  if (oauth) {
     headers.set(
       "Authorization",
-      `Bearer ${auth ? oauthToken : appAccessToken}`
+      `Bearer ${oauth ? oauthToken : appAccessToken}`
     );
   }
 
-  const response = await fetch(url, {
+  let parsedUrl = url;
+  if (config.query) {
+    parsedUrl += "?";
+    Object.entries(config.query).forEach((v, i) => {
+      parsedUrl += `${i > 0 ? "&" : ""}${v[0]}=${v[1]}`;
+    });
+  }
+
+  const response = await fetch(`${HELIX_URL}${parsedUrl}`, {
     method: method,
     body: JSON.stringify(body),
     headers,
@@ -32,8 +45,12 @@ export default async function callApi(
 }
 
 const handlerApiError = async (response: Response, config: RequestConfig) => {
+  // TODO: Throw seperate errors for scopes
   if (!response.ok) {
-    const isJson = response.headers.get("Content-Type") === "application/json";
+    const isJson = response.headers
+      .get("content-type")
+      ?.includes("application/json");
+
     const text = isJson
       ? JSON.stringify(await response.json(), null, 2)
       : await response.text();
@@ -42,9 +59,9 @@ const handlerApiError = async (response: Response, config: RequestConfig) => {
       response.status,
       config.method ?? "GET",
       response.statusText,
-      config.url,
+      response.url,
       text,
-      isJson
+      isJson == undefined ? false : isJson
     );
   }
 };
@@ -53,13 +70,13 @@ export async function transformTwitchApiResponse<T>(
   response: Response
 ): Promise<T> {
   if (response.status === 204) {
-    return undefined as unknown as T; // oof
+    return undefined as unknown as T;
   }
 
   const text = await response.text();
 
   if (!text) {
-    return undefined as unknown as T; // mega oof - Twitch doesn't return a response when it should
+    return undefined as unknown as T;
   }
 
   return JSON.parse(text) as T;

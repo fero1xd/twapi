@@ -2,7 +2,7 @@ import { Logger, createLogger } from "@twapi/logger";
 import { ApiCredentials } from "./credentials";
 import { RateLimiter } from "./internal/queue/ratelimiter";
 import callApi, { transformTwitchApiResponse } from "./internal/api";
-import { ChannelApi } from "./categories/channel/channel";
+import { ChannelApi } from "./resources/channel/channel.api";
 import { RequestConfig } from "./internal/interfaces";
 
 export class ApiClient {
@@ -25,15 +25,16 @@ export class ApiClient {
           config,
           this._credentials.clientId,
           this._credentials.appAccessToken,
-          config.auth ? credentials.oauthToken : undefined
+          config.oauth ? credentials.oauthToken : undefined
         );
       },
     });
 
+    // The channel resource
     this._channel = new ChannelApi(this);
   }
 
-  async callApi<T = unknown>(config: RequestConfig) {
+  async enqueueCall<T = unknown>(config: RequestConfig) {
     const result = await this._rateLimiter.request(config);
 
     return await transformTwitchApiResponse<T>(result as Response);

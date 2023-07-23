@@ -6,7 +6,7 @@ export interface RateLimiterConfig {
   performRequest: (config: RequestConfig) => any;
 }
 
-// ^_^ https://github.com/d-fischer/rate-limiter
+// ^_^ Modified: https://github.com/d-fischer/rate-limiter
 export class RateLimiter {
   private readonly gap;
 
@@ -42,7 +42,7 @@ export class RateLimiter {
   }
 
   private async _run(item: QueueItem) {
-    this._log.info(`Performing request`);
+    this._log.info(`Performing request: ${item.req.url}`);
 
     const { resolve, reject, req } = item;
     this._working = true;

@@ -3,11 +3,11 @@ export interface RequestConfig {
 
   method: "GET" | "DELETE" | "POST" | "PUT" | "PATCH" | "DELETE";
 
-  query?: Record<string, string>;
+  query?: Record<string, string | undefined>;
 
   body?: unknown;
 
-  auth?: boolean;
+  oauth?: boolean;
 }
 
 export interface QueueItem {
@@ -18,4 +18,12 @@ export interface QueueItem {
 
 export interface HelixResponse<T> {
   data: T[];
+}
+
+// The Pagination object is empty if there are no more pages to return in the direction you’re paging.
+export interface HelixPaginatedResponse<T> extends HelixResponse<T> {
+  total: number;
+  pagination?: {
+    cursor?: string;
+  };
 }
