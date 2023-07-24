@@ -10,8 +10,10 @@ const credentials = new ApiCredentials(
 const main = async () => {
   const client = new ApiClient(credentials);
 
-  const status = await client.channel.startCommerical("642902413", 60);
-  console.log(status);
+  // const channels = await client.channel.getFollowedChannels("642902413");
+
+  const leaderboard = await client.bits.getBitsLeaderboard();
+  console.log(leaderboard);
 };
 
 main();

@@ -4,6 +4,7 @@ import { RateLimiter } from "./internal/queue/ratelimiter";
 import callApi, { transformTwitchApiResponse } from "./internal/api";
 import { ChannelApi } from "./resources/channel/channel.api";
 import { RequestConfig } from "./internal/interfaces";
+import { Resources } from "./resources/resources";
 
 export class ApiClient {
   private _credentials: ApiCredentials;
@@ -12,7 +13,7 @@ export class ApiClient {
 
   private _rateLimiter: RateLimiter;
 
-  private _channel: ChannelApi;
+  private _resources: Resources;
 
   constructor(credentials: ApiCredentials) {
     this._credentials = credentials;
@@ -30,8 +31,7 @@ export class ApiClient {
       },
     });
 
-    // The channel resource
-    this._channel = new ChannelApi(this);
+    this._resources = new Resources(this);
   }
 
   async enqueueCall<T = unknown>(config: RequestConfig) {
@@ -41,6 +41,10 @@ export class ApiClient {
   }
 
   public get channel() {
-    return this._channel;
+    return this._resources.channel;
+  }
+
+  public get bits() {
+    return this._resources.bits;
   }
 }

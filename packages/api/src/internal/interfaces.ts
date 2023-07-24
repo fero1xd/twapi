@@ -3,7 +3,7 @@ export interface RequestConfig {
 
   method: "GET" | "DELETE" | "POST" | "PUT" | "PATCH" | "DELETE";
 
-  query?: Record<string, string | undefined>;
+  query?: Record<string, any>;
 
   body?: unknown;
 
