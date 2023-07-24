@@ -20,5 +20,5 @@
       "dependsOn": ["^build"]
     }
   },
-  "globalEnv": ["SAMPLE_OAUTH_TOKEN", "CLIENT_ID"]
+  "globalEnv": ["SAMPLE_OAUTH_TOKEN", "CLIENT_ID", "SAMPLE_APP_ACCESS_TOKEN"]
 }
