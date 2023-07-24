@@ -1,5 +1,5 @@
 import { HelixError } from "../errors";
-import { RequestConfig } from "./interfaces";
+import { RequestConfig, ValidateTokenResponse } from "./interfaces";
 import fetch, { Headers } from "cross-fetch";
 
 const HELIX_URL = "https://api.twitch.tv/helix/";
@@ -19,12 +19,7 @@ export default async function callApi(
     headers.set("Content-Type", "application/json");
   }
 
-  if (oauth) {
-    headers.set(
-      "Authorization",
-      `Bearer ${oauth ? oauthToken : appAccessToken}`
-    );
-  }
+  headers.set("Authorization", `Bearer ${oauth ? oauthToken : appAccessToken}`);
 
   let parsedUrl = url;
   if (config.query) {
@@ -80,4 +75,21 @@ export async function transformTwitchApiResponse<T>(
   }
 
   return JSON.parse(text) as T;
+}
+
+export async function validateToken(accessToken: string) {
+  const config: RequestConfig = {
+    url: "https://id.twitch.tv/oauth2/validate",
+    method: "GET",
+  };
+
+  const res = await fetch(config.url, {
+    headers: {
+      Authorization: `OAuth ${accessToken}`,
+    },
+  });
+
+  await handlerApiError(res, config);
+
+  return transformTwitchApiResponse<ValidateTokenResponse>(res);
 }

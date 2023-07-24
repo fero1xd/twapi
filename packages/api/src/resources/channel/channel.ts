@@ -1,9 +1,3 @@
-export const createBroadcasterQuery = (id: string) => {
-  return {
-    broadcaster_id: id,
-  };
-};
-
 export const createFollowedQuery = (userId: string, broadcasterId?: string) => {
   return broadcasterId
     ? {

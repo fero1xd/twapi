@@ -1,6 +1,6 @@
 import { ApiClient } from "../../client";
 import { HelixResponse } from "../../internal/interfaces";
-import { createBroadcasterQuery } from "../channel/channel";
+import { createBroadcasterQuery } from "../common.data";
 import {
   Cheermotes,
   GetBitsLeaderboardQuery,

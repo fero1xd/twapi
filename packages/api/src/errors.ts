@@ -42,3 +42,9 @@ export class HelixError extends Error {
     return this._body;
   }
 }
+
+export class AuthenticationError extends Error {
+  constructor() {
+    super("Cannot authenticate with your access token");
+  }
+}

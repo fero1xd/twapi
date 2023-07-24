@@ -22,7 +22,9 @@
     "@twapi/logger": "workspace:^",
     "@twapi/tsconfig": "workspace:^",
     "@types/node": "^20.4.2",
+    "@types/retry": "^0.12.2",
     "cross-fetch": "^4.0.0",
+    "retry": "^0.13.1",
     "tsup": "^7.1.0"
   }
 }

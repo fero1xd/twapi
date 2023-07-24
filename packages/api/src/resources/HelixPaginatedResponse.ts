@@ -1,6 +1,6 @@
 import { ApiClient } from "../client";
 import { HelixPaginatedResponse, RequestConfig } from "../internal/interfaces";
-import { HelixPaginatedResponseWithTotal } from "./channelPoints/channelPoints.data";
+import { HelixPaginatedResponseWithTotal } from "./common.data";
 
 export class HelixPaginatedResponseIterator<T = unknown> {
   private readonly _initialResponse: T[] = [];

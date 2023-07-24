@@ -1,13 +1,11 @@
 import { ApiClient } from "../../client";
-import {
-  HelixPaginatedResponse,
-  HelixResponse,
-  RequestConfig,
-} from "../../internal/interfaces";
+import { HelixResponse, RequestConfig } from "../../internal/interfaces";
 import { HelixPaginatedResponseIterator } from "../HelixPaginatedResponse";
-import { HelixPaginatedResponseWithTotal } from "../channelPoints/channelPoints.data";
 import {
+  HelixPaginatedResponseWithTotal,
   createBroadcasterQuery,
+} from "../common.data";
+import {
   createCommercialQuery,
   createFollowedQuery,
   createFollowersQuery,

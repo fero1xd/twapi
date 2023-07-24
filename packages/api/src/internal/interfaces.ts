@@ -7,7 +7,7 @@ export interface RequestConfig {
 
   body?: unknown;
 
-  oauth?: boolean;
+  oauth: boolean;
 }
 
 export interface QueueItem {
@@ -25,4 +25,12 @@ export interface HelixPaginatedResponse<T> extends HelixResponse<T> {
   pagination?: {
     cursor?: string;
   };
+}
+
+export interface ValidateTokenResponse {
+  client_id: string;
+  login: string;
+  scopes: string[];
+  user_id: string;
+  expires_in: number;
 }

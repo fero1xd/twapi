@@ -1,5 +1,6 @@
 import { HelixPaginatedResponse } from "../../internal/interfaces";
 import { BroadcasterInfo, UserInfo } from "../../internal/types";
+import { Image } from "../common.data";
 
 export interface CreateRewardBody {
   title: string;
@@ -18,17 +19,13 @@ export interface CreateRewardBody {
   max_per_stream?: number;
 }
 
-type RewardImage = {
-  [K in `url_${"1" | "2" | "4"}x`]: string;
-};
-
 export interface RewardResponse extends BroadcasterInfo {
   id: string;
   title: string;
   prompt: string;
   cost: number;
-  image: RewardImage | null;
-  default_image: RewardImage;
+  image: Image | null;
+  default_image: Image;
   background_color: string;
   is_enabled: boolean;
   is_user_input_required: boolean;
@@ -76,11 +73,6 @@ export interface RewardRedemptionResponse extends BroadcasterInfo, UserInfo {
     prompt: string;
     cost: number;
   };
-}
-
-export interface HelixPaginatedResponseWithTotal<T>
-  extends HelixPaginatedResponse<T> {
-  total: number;
 }
 
 export interface UpdateRedemptionStatusQuery {

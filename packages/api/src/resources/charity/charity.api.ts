@@ -5,7 +5,7 @@ import {
   RequestConfig,
 } from "../../internal/interfaces";
 import { HelixPaginatedResponseIterator } from "../HelixPaginatedResponse";
-import { createBroadcasterQuery } from "../channel/channel";
+import { createBroadcasterQuery } from "../common.data";
 import { CharityCampaign, CharityDonation } from "./charity.data";
 
 interface CharityApiEndpoints {

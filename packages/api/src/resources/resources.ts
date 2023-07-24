@@ -3,18 +3,21 @@ import { BitsApi } from "./bits/bits.api";
 import { ChannelApi } from "./channel/channel.api";
 import { ChannelPointsApi } from "./channelPoints/channelPoints.api";
 import { CharityApi } from "./charity/charity.api";
+import { ChatApi } from "./chat/chat.api";
 
 export class Resources {
   private _channel: ChannelApi;
   private _bits: BitsApi;
   private _channelPoints: ChannelPointsApi;
   private _charity: CharityApi;
+  private _chat: ChatApi;
 
   constructor(_client: ApiClient) {
     this._channel = new ChannelApi(_client);
     this._bits = new BitsApi(_client);
     this._channelPoints = new ChannelPointsApi(_client);
     this._charity = new CharityApi(_client);
+    this._chat = new ChatApi(_client);
   }
 
   get channel() {
@@ -31,5 +34,9 @@ export class Resources {
 
   get charity() {
     return this._charity;
+  }
+
+  get chat() {
+    return this._chat;
   }
 }
