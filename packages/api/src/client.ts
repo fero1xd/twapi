@@ -47,4 +47,8 @@ export class ApiClient {
   public get bits() {
     return this._resources.bits;
   }
+
+  public get channelPoints() {
+    return this._resources.channelPoints;
+  }
 }

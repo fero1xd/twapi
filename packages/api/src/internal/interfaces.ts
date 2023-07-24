@@ -22,7 +22,6 @@ export interface HelixResponse<T> {
 
 // The Pagination object is empty if there are no more pages to return in the direction you’re paging.
 export interface HelixPaginatedResponse<T> extends HelixResponse<T> {
-  total: number;
   pagination?: {
     cursor?: string;
   };

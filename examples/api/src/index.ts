@@ -12,7 +12,11 @@ const main = async () => {
 
   // const channels = await client.channel.getFollowedChannels("642902413");
 
-  const leaderboard = await client.bits.getBitsLeaderboard();
+  const leaderboard = await client.channelPoints.getCustomRewardRedemption({
+    broadcaster_id: "642902413",
+    reward_id: "dwad",
+    status: "CANCELED",
+  });
   console.log(leaderboard);
 };
 

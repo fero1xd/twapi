@@ -1,18 +1,21 @@
 import { ApiClient } from "../client";
 import { HelixPaginatedResponse, RequestConfig } from "../internal/interfaces";
+import { HelixPaginatedResponseWithTotal } from "./channelPoints/channelPoints.data";
 
 export class HelixPaginatedResponseIterator<T = unknown> {
   private readonly _initialResponse: T[] = [];
-  private readonly _total: number;
+  private readonly _total?: number;
   private _cursor?: string;
   private _requestConfig: RequestConfig;
 
   constructor(
-    response: HelixPaginatedResponse<T>,
+    response: HelixPaginatedResponse<T> | HelixPaginatedResponseWithTotal<T>,
     private _client: ApiClient,
     config: RequestConfig
   ) {
-    this._total = response.total;
+    // @ts-expect-error
+    this._total = response.total || undefined;
+
     this._cursor = response.pagination?.cursor;
     this._initialResponse.push(...response.data);
     this._requestConfig = config;
