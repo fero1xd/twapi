@@ -51,4 +51,8 @@ export class ApiClient {
   public get channelPoints() {
     return this._resources.channelPoints;
   }
+
+  public get charity() {
+    return this._resources.charity;
+  }
 }
