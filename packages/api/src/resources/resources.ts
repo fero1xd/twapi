@@ -5,6 +5,7 @@ import { ChannelPointsApi } from "./channelPoints/channelPoints.api";
 import { CharityApi } from "./charity/charity.api";
 import { ChatApi } from "./chat/chat.api";
 import { ClipApi } from "./clip/clip.api";
+import { EntitlementsApi } from "./entitlements/entitlements.api";
 
 export class Resources {
   private _channel: ChannelApi;
@@ -13,6 +14,7 @@ export class Resources {
   private _charity: CharityApi;
   private _chat: ChatApi;
   private _clip: ClipApi;
+  private _entitlements: EntitlementsApi;
 
   constructor(_client: ApiClient) {
     this._channel = new ChannelApi(_client);
@@ -21,6 +23,7 @@ export class Resources {
     this._charity = new CharityApi(_client);
     this._chat = new ChatApi(_client);
     this._clip = new ClipApi(_client);
+    this._entitlements = new EntitlementsApi(_client);
   }
 
   get channel() {
@@ -44,5 +47,9 @@ export class Resources {
   }
   get clip() {
     return this._clip;
+  }
+
+  get entitlements() {
+    return this._entitlements;
   }
 }

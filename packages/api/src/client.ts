@@ -166,4 +166,8 @@ export class ApiClient {
   public get clip() {
     return this._resources.clip;
   }
+
+  public get entitlements() {
+    return this._resources.entitlements;
+  }
 }
