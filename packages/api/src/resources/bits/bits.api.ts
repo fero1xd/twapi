@@ -7,7 +7,7 @@ import {
   HelixBitsLeaderboardResponse,
 } from "./bits.data";
 
-interface BitsApiEndpoints {
+export interface BitsApiEndpoints {
   /**
    * Gets the Bits leaderboard for the authenticated broadcaster.
    *

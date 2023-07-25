@@ -19,7 +19,7 @@ import {
   UpdateRewardBody,
 } from "./channelPoints.data";
 
-interface ChannelPointsApiEndpoints {
+export interface ChannelPointsApiEndpoints {
   /**
    * Gets a list of custom rewards that the specified broadcaster created.
    *

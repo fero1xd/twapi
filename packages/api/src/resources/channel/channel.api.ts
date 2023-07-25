@@ -19,7 +19,7 @@ import {
   FollowedChannel,
 } from "./channel.data";
 
-interface ChannelApiEndPoints {
+export interface ChannelApiEndPoints {
   /**
    * Gets information about one or more channels.
    *

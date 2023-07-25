@@ -170,4 +170,12 @@ export class ApiClient {
   public get entitlements() {
     return this._resources.entitlements;
   }
+
+  public get whispers() {
+    return this._resources.whispers;
+  }
+
+  public get users() {
+    return this._resources.users;
+  }
 }

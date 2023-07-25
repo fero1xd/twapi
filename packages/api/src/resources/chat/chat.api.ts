@@ -25,7 +25,7 @@ import {
   UserColor,
 } from "./chat.data";
 
-interface ChatApiEndpoints {
+export interface ChatApiEndpoints {
   /**
    * Gets the list of users that are connected to the broadcaster’s chat session.
    *

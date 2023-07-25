@@ -8,7 +8,7 @@ import { HelixPaginatedResponseIterator } from "../HelixPaginatedResponse";
 import { createBroadcasterQuery } from "../common.data";
 import { CharityCampaign, CharityDonation } from "./charity.data";
 
-interface CharityApiEndpoints {
+export interface CharityApiEndpoints {
   /**
    * Gets information about the charity campaign that a broadcaster is running. For example, the campaign’s fundraising goal and the current amount of donations.
    *

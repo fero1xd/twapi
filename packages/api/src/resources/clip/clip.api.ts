@@ -8,7 +8,7 @@ import { HelixPaginatedResponseIterator } from "../HelixPaginatedResponse";
 import { createClipQuery, createGetClipsByBroadcasterQuery } from "./clip";
 import { Clip, CreateClipResponse, GetClipsFilter } from "./clip.data";
 
-interface ClipApiEndpoints {
+export interface ClipApiEndpoints {
   /**
    * Creates a clip from the broadcaster’s stream.
    *

@@ -12,7 +12,7 @@ import {
   GetEntitlementQuery,
 } from "./entitlements.data";
 
-interface EntitlementsApiEndpoint {
+export interface EntitlementsApiEndpoints {
   getDropEntitlements(
     query: GetEntitlementQuery,
     useAppToken: boolean
@@ -26,7 +26,7 @@ interface EntitlementsApiEndpoint {
   ): Promise<EntitlementStaus[]>;
 }
 
-export class EntitlementsApi implements EntitlementsApiEndpoint {
+export class EntitlementsApi implements EntitlementsApiEndpoints {
   constructor(private _client: ApiClient) {}
 
   async getDropEntitlements(query: GetEntitlementQuery, useAppToken = true) {
