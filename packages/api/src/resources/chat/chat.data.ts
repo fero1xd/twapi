@@ -1,5 +1,5 @@
 import { HelixResponse } from "../../internal/interfaces";
-import { Prettify } from "../../internal/types";
+import { Prettify, UserInfo } from "../../internal/types";
 import { Image } from "../common.data";
 
 export interface ChannelEmote {
@@ -59,3 +59,30 @@ export interface ChatSettings {
 
 export interface UpdateChatSettingsBody
   extends Partial<Exclude<ChatSettings, "broadcaster_id" | "moderator_id">> {}
+
+export interface ChatAnnouncementBody {
+  message: string;
+  color?: "blue" | "green" | "orange" | "purple" | "primary";
+}
+
+export type ChatColor =
+  | "blue"
+  | "blue_violet"
+  | "cadet_blue"
+  | "chocolate"
+  | "coral"
+  | "dodger_blue"
+  | "firebrick"
+  | "golden_rod"
+  | "green"
+  | "hot_pink"
+  | "orange_red"
+  | "red"
+  | "sea_green"
+  | "spring_green"
+  | "yellow_green"
+  | `#${string}`;
+
+export interface UserColor extends UserInfo {
+  color: string;
+}

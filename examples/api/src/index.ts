@@ -10,11 +10,11 @@ const credentials = new ApiCredentials(
 const main = async () => {
   const client = new ApiClient(credentials);
 
-  const chatters = await client.chat.getChatters("64290213", "642902413");
+  const clip = await client.clip.getClipById(
+    "HelplessArborealSpindleRlyTho-j1YJ_kDlP4IdOSe4"
+  );
 
-  for await (const ch of chatters) {
-    console.log(ch);
-  }
+  console.log(clip);
 };
 
 main();

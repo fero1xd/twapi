@@ -162,4 +162,8 @@ export class ApiClient {
   public get userId() {
     return this._userId;
   }
+
+  public get clip() {
+    return this._resources.clip;
+  }
 }

@@ -6,15 +6,23 @@ import {
   HelixPaginatedResponseWithTotal,
   createBroadcasterQuery,
 } from "../common.data";
-import { createBroadModQuery, createGetEmoteSetsQuery } from "./chat";
+import {
+  createBroadModQuery,
+  createGetEmoteSetsQuery,
+  createSendShoutoutQuery,
+  createUpdateChatColorQuery,
+} from "./chat";
 import {
   ChannelEmote,
+  ChatAnnouncementBody,
   ChatBadge,
+  ChatColor,
   ChatSettings,
   EmoteSet,
   GlobalEmote,
   HelixResponseWithTemplate,
   UpdateChatSettingsBody,
+  UserColor,
 } from "./chat.data";
 
 interface ChatApiEndpoints {
@@ -96,9 +104,46 @@ interface ChatApiEndpoints {
    */
   updateChatSettings(
     broadcasterId: string,
-    body: UpdateChatSettingsBody,
-    moderatorId?: string
+    moderatorId: string,
+    body: UpdateChatSettingsBody
   ): Promise<ChatSettings>;
+
+  /**
+   * Sends an announcement to the broadcaster’s chat room.
+   *
+   * @param broadcasterId The ID of the broadcaster that owns the chat room to send the announcement to.
+   * @param moderatorId The ID of a user who has permission to moderate the broadcaster’s chat room, or the broadcaster’s ID if they’re sending the announcement. This ID must match the user ID in the user access token.
+   * @param body The message and color fields
+   */
+  sendChatAnnouncement(
+    broadcasterId: string,
+    moderatorId: string,
+    body: ChatAnnouncementBody
+  ): Promise<void>;
+
+  /**
+   * Sends a Shoutout to the specified broadcaster.
+   * **Rate Limits** The broadcaster may send a Shoutout once every 2 minutes. They may send the same broadcaster a Shoutout once every 60 minutes.
+   * @param from The ID of the broadcaster that’s sending the Shoutout.
+   * @param to The ID of the broadcaster that’s receiving the Shoutout.
+   * @param moderatorId The ID of the broadcaster or a user that is one of the broadcaster’s moderators. This ID must match the user ID in the access token.
+   */
+  sendShoutout(from: string, to: string, moderatorId: string): Promise<void>;
+
+  /**
+   * Gets the color used for the user’s name in chat.
+   *
+   * @param userId The ID of the user whose username color you want to get
+   */
+  getUserChatColor(userId: string): Promise<UserColor>;
+
+  /**
+   * Updates the color used for the user’s name in chat.
+   *
+   * @param userId The ID of the user whose chat color you want to update. This ID must match the user ID in the access token.
+   * @param color The color to use for the user’s name in chat.
+   */
+  updateUserChatColor(userId: string, color: ChatColor): Promise<void>;
 }
 
 export class ChatApi implements ChatApiEndpoints {
@@ -190,8 +235,8 @@ export class ChatApi implements ChatApiEndpoints {
 
   async updateChatSettings(
     broadcasterId: string,
-    body: UpdateChatSettingsBody,
-    moderatorId?: string
+    moderatorId: string,
+    body: UpdateChatSettingsBody
   ): Promise<ChatSettings> {
     const res = await this._client.enqueueCall<HelixResponse<ChatSettings>>({
       url: "chat/settings",
@@ -202,5 +247,48 @@ export class ChatApi implements ChatApiEndpoints {
     });
 
     return res.data[0];
+  }
+
+  async sendChatAnnouncement(
+    broadcasterId: string,
+    moderatorId: string,
+    body: ChatAnnouncementBody
+  ) {
+    await this._client.enqueueCall({
+      url: "chat/announcements",
+      method: "POST",
+      body,
+      query: createBroadModQuery(broadcasterId, moderatorId),
+      oauth: true,
+    });
+  }
+
+  async sendShoutout(from: string, to: string, moderatorId: string) {
+    await this._client.enqueueCall({
+      url: "chat/shoutouts",
+      method: "POST",
+      query: createSendShoutoutQuery(from, to, moderatorId),
+      oauth: true,
+    });
+  }
+
+  async getUserChatColor(userId: string) {
+    const res = await this._client.enqueueCall<HelixResponse<UserColor>>({
+      url: "chat/color",
+      method: "GET",
+      query: { user_id: userId },
+      oauth: false,
+    });
+
+    return res.data[0];
+  }
+
+  async updateUserChatColor(userId: string, color: ChatColor) {
+    await this._client.enqueueCall({
+      url: "chat/color",
+      method: "PUT",
+      query: createUpdateChatColorQuery(userId, color),
+      oauth: true,
+    });
   }
 }
