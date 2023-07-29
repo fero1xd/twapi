@@ -65,7 +65,7 @@ export class GamesApi implements GamesApiEndpoints {
 
   async getGamesbyCategory(categoryId: string) {
     const config: RequestConfig = {
-      url: "games/top",
+      url: "games",
       method: "GET",
       oauth: false,
       query: { id: categoryId },
@@ -80,7 +80,7 @@ export class GamesApi implements GamesApiEndpoints {
 
   async getGamesbyName(name: string) {
     const config: RequestConfig = {
-      url: "games/top",
+      url: "games",
       method: "GET",
       oauth: false,
       query: { name },
@@ -95,7 +95,7 @@ export class GamesApi implements GamesApiEndpoints {
 
   async getGamesByIgdbId(igdbId: string) {
     const config: RequestConfig = {
-      url: "games/top",
+      url: "games",
       method: "GET",
       oauth: false,
       query: { igdb_id: igdbId },
