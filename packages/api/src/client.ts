@@ -190,4 +190,8 @@ export class ApiClient {
   public get analytics() {
     return this._resources.analytics;
   }
+
+  public get goals() {
+    return this._resources.goals;
+  }
 }
