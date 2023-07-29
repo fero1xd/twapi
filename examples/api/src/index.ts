@@ -10,8 +10,10 @@ const credentials = new ApiCredentials(
 const main = async () => {
   const client = new ApiClient(credentials);
 
-  const user = await client.users.getUserByName("subroza");
-  console.log(user);
+  const subs = await client.eventsub.getSubscriptionsByStatus(
+    "enabled",
+    "websocket"
+  );
 };
 
 main();

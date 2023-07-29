@@ -12,6 +12,7 @@ import {
   EntitlementsApi,
   EntitlementsApiEndpoints,
 } from "./entitlements/entitlements.api";
+import { EventSubApi, EventSubApiEndpoints } from "./eventsub/eventsub.api";
 import { UsersApi, UsersApiEndpoints } from "./users/users.api";
 import { WhisperEndpoints, WhispersApi } from "./whispers/whispers.api";
 
@@ -25,6 +26,7 @@ export class Resources {
   private _entitlements: EntitlementsApiEndpoints;
   private _whispers: WhisperEndpoints;
   private _users: UsersApiEndpoints;
+  private _eventsub: EventSubApiEndpoints;
 
   constructor(_client: ApiClient) {
     this._channel = new ChannelApi(_client);
@@ -36,6 +38,7 @@ export class Resources {
     this._entitlements = new EntitlementsApi(_client);
     this._whispers = new WhispersApi(_client);
     this._users = new UsersApi(_client);
+    this._eventsub = new EventSubApi(_client);
   }
 
   get channel() {
@@ -72,5 +75,9 @@ export class Resources {
 
   get users() {
     return this._users;
+  }
+
+  get eventsub() {
+    return this._eventsub;
   }
 }

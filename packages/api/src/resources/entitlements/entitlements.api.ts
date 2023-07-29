@@ -13,13 +13,36 @@ import {
 } from "./entitlements.data";
 
 export interface EntitlementsApiEndpoints {
+  /**
+   * Gets an organization’s list of entitlements that have been granted to a game, a user, or both.
+   *
+   * @param query Query
+   * @param useAppToken Wether to use app access token or user access token
+   *
+   * @returns A paginated list of entitlements
+   */
   getDropEntitlements(
     query: GetEntitlementQuery,
     useAppToken: boolean
   ): Promise<HelixPaginatedResponseIterator<Entitlement>>;
 
+  /**
+   * Gets an organization’s list of entitlements that have been granted to a game, a user, or both.
+   *
+   * @param id Entitlement id
+   *
+   * @returns A list of entitlements
+   */
   getDropEntitlementsById(id: string): Promise<Entitlement[]>;
 
+  /**
+   * Updates the Drop entitlement’s fulfillment status.
+   *
+   * @param ids A list of IDs that identify the entitlements to update. You may specify a maximum of 100 IDs.
+   * @param fulfillmentStatus he fulfillment status to set the entitlements to.
+   *
+   * @returns A list that indicates which entitlements were successfully updated and those that weren’t.
+   */
   updateEntitlements(
     ids: string[],
     fulfillmentStatus: FulfillmentStatus

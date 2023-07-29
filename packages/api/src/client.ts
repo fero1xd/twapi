@@ -178,4 +178,8 @@ export class ApiClient {
   public get users() {
     return this._resources.users;
   }
+
+  public get eventsub() {
+    return this._resources.eventsub;
+  }
 }

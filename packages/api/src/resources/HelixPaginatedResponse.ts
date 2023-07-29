@@ -7,15 +7,17 @@ export class HelixPaginatedResponseIterator<T = unknown> {
   private readonly _total?: number;
   private _cursor?: string;
   private _requestConfig: RequestConfig;
+  private _client: ApiClient;
 
   constructor(
     response: HelixPaginatedResponse<T> | HelixPaginatedResponseWithTotal<T>,
-    private _client: ApiClient,
+    client: ApiClient,
     config: RequestConfig
   ) {
     // @ts-expect-error
-    this._total = response.total || undefined;
+    this._total = response.total === undefined ? undefined : response.total;
 
+    this._client = client;
     this._cursor = response.pagination?.cursor;
     this._initialResponse.push(...response.data);
     this._requestConfig = config;
@@ -49,7 +51,7 @@ export class HelixPaginatedResponseIterator<T = unknown> {
     }
   }
 
-  get total() {
+  public get total() {
     return this._total;
   }
 }
