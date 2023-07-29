@@ -194,4 +194,8 @@ export class ApiClient {
   public get goals() {
     return this._resources.goals;
   }
+
+  public get guestStar() {
+    return this._resources.guestStars;
+  }
 }

@@ -16,6 +16,7 @@ import {
 import { EventSubApi, EventSubApiEndpoints } from "./eventsub/eventsub.api";
 import { GamesApi, GamesApiEndpoints } from "./games/games.api";
 import { GoalsApi, GoalsApiEndpoints } from "./goals/goals.api";
+import { GuestStarApi, GuestStarApiEndpoints } from "./guestStar/guestStar.api";
 import { UsersApi, UsersApiEndpoints } from "./users/users.api";
 import { WhisperEndpoints, WhispersApi } from "./whispers/whispers.api";
 
@@ -33,6 +34,7 @@ export class Resources {
   private _games: GamesApiEndpoints;
   private _analytics: AnalyticsApiEndpoints;
   private _goals: GoalsApiEndpoints;
+  private _guestStar: GuestStarApiEndpoints;
 
   constructor(_client: ApiClient) {
     this._channel = new ChannelApi(_client);
@@ -48,6 +50,7 @@ export class Resources {
     this._games = new GamesApi(_client);
     this._analytics = new AnalyticsApi(_client);
     this._goals = new GoalsApi(_client);
+    this._guestStar = new GuestStarApi(_client);
   }
 
   get channel() {
@@ -100,5 +103,9 @@ export class Resources {
 
   get goals() {
     return this._goals;
+  }
+
+  get guestStars() {
+    return this._guestStar;
   }
 }
