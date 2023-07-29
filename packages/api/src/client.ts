@@ -182,4 +182,8 @@ export class ApiClient {
   public get eventsub() {
     return this._resources.eventsub;
   }
+
+  public get games() {
+    return this._resources.games;
+  }
 }

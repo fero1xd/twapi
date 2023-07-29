@@ -13,6 +13,7 @@ import {
   EntitlementsApiEndpoints,
 } from "./entitlements/entitlements.api";
 import { EventSubApi, EventSubApiEndpoints } from "./eventsub/eventsub.api";
+import { GamesApi, GamesApiEndpoints } from "./games/games.api";
 import { UsersApi, UsersApiEndpoints } from "./users/users.api";
 import { WhisperEndpoints, WhispersApi } from "./whispers/whispers.api";
 
@@ -27,6 +28,7 @@ export class Resources {
   private _whispers: WhisperEndpoints;
   private _users: UsersApiEndpoints;
   private _eventsub: EventSubApiEndpoints;
+  private _games: GamesApiEndpoints;
 
   constructor(_client: ApiClient) {
     this._channel = new ChannelApi(_client);
@@ -39,6 +41,7 @@ export class Resources {
     this._whispers = new WhispersApi(_client);
     this._users = new UsersApi(_client);
     this._eventsub = new EventSubApi(_client);
+    this._games = new GamesApi(_client);
   }
 
   get channel() {
@@ -79,5 +82,9 @@ export class Resources {
 
   get eventsub() {
     return this._eventsub;
+  }
+
+  get games() {
+    return this._games;
   }
 }

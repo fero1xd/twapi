@@ -10,10 +10,11 @@ const credentials = new ApiCredentials(
 const main = async () => {
   const client = new ApiClient(credentials);
 
-  const subs = await client.eventsub.getSubscriptionsByStatus(
-    "enabled",
-    "websocket"
-  );
+  const games = await client.games.getTopGames();
+
+  for await (const game of games) {
+    console.log(game);
+  }
 };
 
 main();
