@@ -186,4 +186,8 @@ export class ApiClient {
   public get games() {
     return this._resources.games;
   }
+
+  public get analytics() {
+    return this._resources.analytics;
+  }
 }

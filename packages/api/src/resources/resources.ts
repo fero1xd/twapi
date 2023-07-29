@@ -1,4 +1,5 @@
 import { ApiClient } from "../client";
+import { AnalyticsApi, AnalyticsApiEndpoints } from "./analytics/analytics.api";
 import { BitsApi, BitsApiEndpoints } from "./bits/bits.api";
 import { ChannelApi, ChannelApiEndPoints } from "./channel/channel.api";
 import {
@@ -29,6 +30,7 @@ export class Resources {
   private _users: UsersApiEndpoints;
   private _eventsub: EventSubApiEndpoints;
   private _games: GamesApiEndpoints;
+  private _analytics: AnalyticsApiEndpoints;
 
   constructor(_client: ApiClient) {
     this._channel = new ChannelApi(_client);
@@ -42,6 +44,7 @@ export class Resources {
     this._users = new UsersApi(_client);
     this._eventsub = new EventSubApi(_client);
     this._games = new GamesApi(_client);
+    this._analytics = new AnalyticsApi(_client);
   }
 
   get channel() {
@@ -86,5 +89,9 @@ export class Resources {
 
   get games() {
     return this._games;
+  }
+
+  get analytics() {
+    return this._analytics;
   }
 }
