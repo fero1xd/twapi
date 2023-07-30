@@ -21,6 +21,7 @@ import {
   ModerationApi,
   ModerationApiEndpoints,
 } from "./moderation/moderation.api";
+import { PollsApi, PollsApiEndpoints } from "./polls/polls.api";
 import { UsersApi, UsersApiEndpoints } from "./users/users.api";
 import { WhisperEndpoints, WhispersApi } from "./whispers/whispers.api";
 
@@ -40,6 +41,7 @@ export class Resources {
   private _goals: GoalsApiEndpoints;
   private _guestStar: GuestStarApiEndpoints;
   private _moderation: ModerationApiEndpoints;
+  private _polls: PollsApiEndpoints;
 
   constructor(_client: ApiClient) {
     this._channel = new ChannelApi(_client);
@@ -57,6 +59,7 @@ export class Resources {
     this._goals = new GoalsApi(_client);
     this._guestStar = new GuestStarApi(_client);
     this._moderation = new ModerationApi(_client);
+    this._polls = new PollsApi(_client);
   }
 
   get channel() {
@@ -117,5 +120,9 @@ export class Resources {
 
   get moderation() {
     return this._moderation;
+  }
+
+  get polls() {
+    return this._polls;
   }
 }

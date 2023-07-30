@@ -202,4 +202,8 @@ export class ApiClient {
   public get moderation() {
     return this._resources.moderation;
   }
+
+  public get polls() {
+    return this._resources.polls;
+  }
 }
