@@ -210,4 +210,8 @@ export class ApiClient {
   public get predictions() {
     return this._resources.predictions;
   }
+
+  public get raids() {
+    return this._resources.raids;
+  }
 }
