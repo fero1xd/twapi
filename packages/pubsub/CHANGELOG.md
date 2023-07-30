@@ -1,5 +1,11 @@
 # @twapi/pubsub
 
+## 0.3.0
+
+### Minor Changes
+
+- 18e9767: feat(pubsub): listening to topics again after reconnect
+
 ## 0.2.0
 
 ### Minor Changes
