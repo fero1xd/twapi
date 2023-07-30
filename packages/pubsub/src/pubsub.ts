@@ -198,64 +198,78 @@ export class PubSub {
    * Registers pending listeners after connection gets opened
    */
   private _registerPendingListeners() {
+    if (this.listeners.length) {
+      this.log.info("Subscribing to topics again, maybe after reconnect.");
+
+      for (let i = this.listeners.length - 1; i >= 0; i--) {
+        this._subHelper(this.listeners[i], false);
+      }
+    }
+
     if (!this.pendingListeners.length) return;
 
     this.log.info("Registering pending listeners");
 
     for (let i = this.pendingListeners.length - 1; i >= 0; i--) {
-      const l = this.pendingListeners[i];
-
-      let timeout: NodeJS.Timeout;
-      const finalTopic = l.getParsedTopic();
-
-      const unsubscribe = this._addResponseListener((message) => {
-        const nonce = l.getNonce();
-
-        if (message.nonce !== nonce) return;
-
-        unsubscribe();
-        if (timeout) clearTimeout(timeout);
-
-        if (message.error) {
-          this.log.error(
-            "Error listening on the topic: " +
-              finalTopic +
-              ", error: " +
-              message.error
-          );
-          if (message.error === "ERR_BADAUTH") {
-            this.log.error(
-              "Please check if your access token has required oauth scopes for this topic"
-            );
-          }
-
-          l.triggerErrorHandler(message.error);
-
-          return;
-        }
-
-        this._addListener(l);
-
-        this.log.info("Successfully listening on topic: " + finalTopic);
-      });
-
-      timeout = setTimeout(() => {
-        unsubscribe();
-        this.log.error("Timeout while listening on topic: " + finalTopic);
-        l.triggerTimeoutHandler();
-      }, 2000);
-
-      this._send({
-        type: MessageType.LISTEN,
-        nonce: l.getNonce(),
-        data: {
-          topics: [l.getParsedTopic()],
-          auth_token: this.oauthToken,
-        },
-      });
-
+      this._subHelper(this.pendingListeners[i]);
       this.pendingListeners.splice(i, 1);
     }
+  }
+
+  /**
+   * Helper to subscribe to topics
+   *
+   * @param listener The listener class
+   * @param add Wether to add this listener to main listeners array
+   */
+  private _subHelper(listener: Listener, add = true) {
+    let timeout: NodeJS.Timeout;
+    const finalTopic = listener.getParsedTopic();
+
+    const unsubscribe = this._addResponseListener((message) => {
+      const nonce = listener.getNonce();
+
+      if (message.nonce !== nonce) return;
+
+      unsubscribe();
+      if (timeout) clearTimeout(timeout);
+
+      if (message.error) {
+        this.log.error(
+          "Error listening on the topic: " +
+            finalTopic +
+            ", error: " +
+            message.error
+        );
+        if (message.error === "ERR_BADAUTH") {
+          this.log.error(
+            "Please check if your access token has required oauth scopes for this topic"
+          );
+        }
+
+        listener.triggerErrorHandler(message.error);
+
+        return;
+      }
+
+      add && this._addListener(listener);
+      this.log.info("Successfully listening on topic: " + finalTopic);
+    });
+
+    timeout = setTimeout(() => {
+      unsubscribe();
+      this.log.error("Timeout while listening on topic: " + finalTopic);
+      listener.triggerTimeoutHandler();
+    }, 2000);
+
+    this._send({
+      type: MessageType.LISTEN,
+      nonce: listener.getNonce(),
+      data: {
+        topics: [listener.getParsedTopic()],
+        auth_token: this.oauthToken,
+      },
+    });
   }
 
   /**
@@ -315,45 +329,7 @@ export class PubSub {
       this.log.warn("Waiting till connection is established");
       this.pendingListeners.push(listener);
     } else {
-      let timeout: NodeJS.Timeout;
-
-      const unsubscribe = this._addResponseListener((message) => {
-        if (message.nonce !== nonce) return;
-
-        unsubscribe();
-        if (timeout) clearTimeout(timeout);
-
-        if (message.error) {
-          this.log.error(
-            "Error listening on the topic: " +
-              finalTopic +
-              ", error: " +
-              message.error
-          );
-
-          listener.triggerErrorHandler(message.error);
-
-          return;
-        }
-
-        this._addListener(listener);
-        this.log.info("Successfully listening on topic: " + finalTopic);
-      });
-
-      timeout = setTimeout(() => {
-        unsubscribe();
-        this.log.error("Timeout while listening on topic: " + finalTopic);
-        listener.triggerTimeoutHandler();
-      }, 2000);
-
-      this._send({
-        type: MessageType.LISTEN,
-        nonce,
-        data: {
-          topics: [finalTopic],
-          auth_token: this.oauthToken,
-        },
-      });
+      this._subHelper(listener);
     }
 
     return new ListenerWrap<ParsedMap[typeof topic]>(listener, this);
