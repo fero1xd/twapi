@@ -9,6 +9,15 @@ const credentials = new ApiCredentials(
 
 const main = async () => {
   const client = new ApiClient(credentials);
+
+  const q = {
+    moderator_id: "642902413",
+    broadcaster_id: "642902413",
+  };
+
+  const mods = await client.moderation.getModerators(q.broadcaster_id);
+
+  console.log(mods);
 };
 
 main();

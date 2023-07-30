@@ -198,4 +198,8 @@ export class ApiClient {
   public get guestStar() {
     return this._resources.guestStars;
   }
+
+  public get moderation() {
+    return this._resources.moderation;
+  }
 }
