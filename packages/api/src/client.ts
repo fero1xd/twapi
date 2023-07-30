@@ -206,4 +206,8 @@ export class ApiClient {
   public get polls() {
     return this._resources.polls;
   }
+
+  public get predictions() {
+    return this._resources.predictions;
+  }
 }
