@@ -15,9 +15,9 @@ const main = async () => {
     broadcaster_id: "642902413",
   };
 
-  const mods = await client.moderation.getModerators(q.broadcaster_id);
+  const res = await client.schedule.getChannelICalendar("70225218");
 
-  console.log(mods);
+  console.log(res);
 };
 
 main();

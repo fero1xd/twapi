@@ -214,4 +214,8 @@ export class ApiClient {
   public get raids() {
     return this._resources.raids;
   }
+
+  public get schedule() {
+    return this._resources.schedule;
+  }
 }

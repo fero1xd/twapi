@@ -1,8 +1,10 @@
+import { createLogger } from "@twapi/logger";
 import { HelixError } from "../errors";
 import { RequestConfig, ValidateTokenResponse } from "./interfaces";
 import fetch, { Headers } from "cross-fetch";
 
 const HELIX_URL = "https://api.twitch.tv/helix/";
+const log = createLogger("twapi:api");
 
 export default async function callApi(
   config: RequestConfig,
@@ -74,13 +76,19 @@ export async function transformTwitchApiResponse<T>(
     return undefined as unknown as T;
   }
 
-  return JSON.parse(text) as T;
+  try {
+    return JSON.parse(text) as T;
+  } catch (_) {
+    log.warn("JSON.parse() failed returning raw text");
+    return text as T;
+  }
 }
 
 export async function validateToken(accessToken: string) {
   const config: RequestConfig = {
     url: "https://id.twitch.tv/oauth2/validate",
     method: "GET",
+    oauth: true,
   };
 
   const res = await fetch(config.url, {
