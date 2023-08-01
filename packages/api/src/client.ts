@@ -234,4 +234,8 @@ export class ApiClient {
   public get videos() {
     return this._resources.videos;
   }
+
+  public get teams() {
+    return this._resources.teams;
+  }
 }
