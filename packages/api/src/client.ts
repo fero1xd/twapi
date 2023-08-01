@@ -226,4 +226,8 @@ export class ApiClient {
   public get streams() {
     return this._resources.streams;
   }
+
+  public get subscriptions() {
+    return this._resources.subscriptions;
+  }
 }
