@@ -35,6 +35,7 @@ import {
   SubscriptionsApiEndpoints,
 } from "./subscriptions/subscriptions.api";
 import { UsersApi, UsersApiEndpoints } from "./users/users.api";
+import { VideosApi, VideosApiEndpoints } from "./videos/videos.api";
 import { WhisperEndpoints, WhispersApi } from "./whispers/whispers.api";
 
 export class Resources {
@@ -60,6 +61,7 @@ export class Resources {
   private _search: SearchApiEndpoints;
   private _streams: StreamsApiEndpoints;
   private _subscriptions: SubscriptionsApiEndpoints;
+  private _videos: VideosApiEndpoints;
 
   constructor(_client: ApiClient) {
     this._channel = new ChannelApi(_client);
@@ -84,6 +86,7 @@ export class Resources {
     this._search = new SearchApi(_client);
     this._streams = new StreamsApi(_client);
     this._subscriptions = new SubscriptionsApi(_client);
+    this._videos = new VideosApi(_client);
   }
 
   get channel() {
@@ -172,5 +175,9 @@ export class Resources {
 
   get subscriptions() {
     return this._subscriptions;
+  }
+
+  get videos() {
+    return this._videos;
   }
 }

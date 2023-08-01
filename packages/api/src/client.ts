@@ -230,4 +230,8 @@ export class ApiClient {
   public get subscriptions() {
     return this._resources.subscriptions;
   }
+
+  public get videos() {
+    return this._resources.videos;
+  }
 }
