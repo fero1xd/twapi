@@ -218,4 +218,12 @@ export class ApiClient {
   public get schedule() {
     return this._resources.schedule;
   }
+
+  public get search() {
+    return this._resources.search;
+  }
+
+  public get streams() {
+    return this._resources.streams;
+  }
 }

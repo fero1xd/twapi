@@ -28,6 +28,8 @@ import {
 } from "./predictions/predictions.api";
 import { RaidsApi, RaidsApiEndpoints } from "./raids/raids.api";
 import { ScheduleApi, ScheduleApiEndpoints } from "./schedule/schedule.api";
+import { SearchApi, SearchApiEndpoints } from "./search/search.api";
+import { StreamsApi, StreamsApiEndpoints } from "./streams/streams.api";
 import { UsersApi, UsersApiEndpoints } from "./users/users.api";
 import { WhisperEndpoints, WhispersApi } from "./whispers/whispers.api";
 
@@ -51,6 +53,8 @@ export class Resources {
   private _predictions: PredictionsApiEndpoints;
   private _raids: RaidsApiEndpoints;
   private _schedule: ScheduleApiEndpoints;
+  private _search: SearchApiEndpoints;
+  private _streams: StreamsApiEndpoints;
 
   constructor(_client: ApiClient) {
     this._channel = new ChannelApi(_client);
@@ -72,6 +76,8 @@ export class Resources {
     this._predictions = new PredictionsApi(_client);
     this._raids = new RaidsApi(_client);
     this._schedule = new ScheduleApi(_client);
+    this._search = new SearchApi(_client);
+    this._streams = new StreamsApi(_client);
   }
 
   get channel() {
@@ -148,5 +154,13 @@ export class Resources {
 
   get schedule() {
     return this._schedule;
+  }
+
+  get search() {
+    return this._search;
+  }
+
+  get streams() {
+    return this._streams;
   }
 }

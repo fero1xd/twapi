@@ -15,9 +15,7 @@ const main = async () => {
     broadcaster_id: "642902413",
   };
 
-  const res = await client.schedule.getChannelICalendar("70225218");
-
-  console.log(res);
+  const res = await client.users.getUserbyId("70225218");
 };
 
 main();

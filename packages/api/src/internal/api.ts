@@ -31,7 +31,7 @@ export default async function callApi(
     });
   }
 
-  const response = await fetch(`${HELIX_URL}${parsedUrl}`, {
+  const response = await fetch(encodeURI(`${HELIX_URL}${parsedUrl}`), {
     method: method,
     body: JSON.stringify(body),
     headers,

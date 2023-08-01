@@ -40,6 +40,8 @@ export class PubSub {
 
   // Triggered when connection gets opened to twitch
   private connectedListener?: Fn;
+
+  // Track for 1st connected event
   private hasCalled: boolean = false;
 
   // Gets triggered before attempt to reconnect
