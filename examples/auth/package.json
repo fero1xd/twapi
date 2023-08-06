@@ -1,0 +1,22 @@
+{
+  "name": "@twapi/auth-example",
+  "version": "0.0.0",
+  "description": "",
+  "main": "index.js",
+  "private": true,
+  "scripts": {
+    "build": "tsup src/index.ts --format cjs,esm --dts",
+    "lint": "eslint \"**/*.{ts,tsx}\" --max-warnings 0"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@twapi/tsconfig": "workspace:^",
+    "@types/node": "^20.4.8",
+    "dotenv": "^16.3.1"
+  },
+  "dependencies": {
+    "@twapi/auth": "workspace:^"
+  }
+}
