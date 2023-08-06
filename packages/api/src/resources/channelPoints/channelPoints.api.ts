@@ -45,13 +45,13 @@ export interface ChannelPointsApiEndpoints {
    * Gets a list of custom rewards that the specified broadcaster created.
    *
    * @param broadcasterId The ID of the broadcaster whose custom rewards you want to get. This ID must match the user ID found in the OAuth token.
-   * @param id A list of IDs to filter the rewards by. To specify more than one ID, include this parameter for each reward you want to get. For example, id=1234&id=5678. You may specify a maximum of 50 IDs.
+   * @param ids ID to filter the rewards by. To specify more than one ID, include this parameter for each reward you want to get. For example, id=1234&id=5678. You may specify a maximum of 50 IDs.
    * @param onlyManageableRewards A Boolean value that determines whether the response contains only the custom rewards that the app may manage (the app is identified by the ID in the Client-Id header). Set to true to get only the custom rewards that the app may manage. The default is false.
    * @returns A list of custom rewards. The list is in ascending order by id. If the broadcaster hasn’t created custom rewards, the list is empty.
    */
   getCustomReward(
     broadcasterId: string,
-    id?: string,
+    ids?: string | string[],
     onlyManageableRewards?: boolean
   ): Promise<RewardResponse[]>;
 
@@ -120,14 +120,14 @@ export class ChannelPointsApi implements ChannelPointsApiEndpoints {
 
   async getCustomReward(
     broadcasterId: string,
-    id?: string,
+    ids?: string | string[],
     onlyManageableRewards?: boolean
   ) {
     const res = await this._client.enqueueCall<HelixResponse<RewardResponse>>({
       url: "channel_points/custom_rewards",
       method: "GET",
       oauth: true,
-      query: createGetRewardQuery(broadcasterId, id, onlyManageableRewards),
+      query: createGetRewardQuery(broadcasterId, ids, onlyManageableRewards),
     });
 
     return res.data;

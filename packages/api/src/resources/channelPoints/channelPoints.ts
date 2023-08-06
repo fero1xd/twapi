@@ -10,7 +10,7 @@ export const createDeleteUpdateRewardQuery = (
 
 export const createGetRewardQuery = (
   broadcasterId: string,
-  id?: string,
+  id?: string | string[],
   onlyManageableRewards?: boolean
 ) => {
   const map = new Map<string, any>();

@@ -56,7 +56,7 @@ export interface GetCustomRewardRedemptionQuery {
   broadcaster_id: string;
   reward_id: string;
   status: RewardStatus;
-  id?: string;
+  id?: string | string[];
   sort?: "OLDEST" | "NEWEST";
 }
 
@@ -76,7 +76,7 @@ export interface RewardRedemptionResponse extends BroadcasterInfo, UserInfo {
 }
 
 export interface UpdateRedemptionStatusQuery {
-  id: string;
+  id: string | string[];
   broadcaster_id: string;
   reward_id: string;
 }

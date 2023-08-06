@@ -1,8 +1,8 @@
-export const createGetPollsQuery = (broadcasterId: string, id?: string) => {
-  return id
+export const createGetPollsQuery = (broadcasterId: string, ids?: string[]) => {
+  return ids
     ? {
         broadcaster_id: broadcasterId,
-        id,
+        id: ids,
       }
     : {
         broadcaster_id: broadcasterId,

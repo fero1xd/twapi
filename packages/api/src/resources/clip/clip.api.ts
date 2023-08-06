@@ -37,11 +37,31 @@ export interface ClipApiEndpoints {
   /**
    * Gets one or more video clips that were captured from streams.
    *
+   * @param gameId The id of the game
+   *
+   * @returns A paginated list of found clips for this game
+   */
+  getClipByGame(gameId: string): Promise<HelixPaginatedResponseIterator<Clip>>;
+
+  /**
+   * Gets one or more video clips that were captured from streams.
+   *
    * @param clipId Id of the clip
    *
    * @returns The found clip
    */
   getClipById(clipId: string): Promise<Clip>;
+
+  /**
+   * Gets one or more video clips that were captured from streams.
+   *
+   * @param clipIds List of Ids of the clip
+   *
+   * @returns A Paginated list of found clips
+   */
+  getClipByIds(
+    clipIds: string[]
+  ): Promise<HelixPaginatedResponseIterator<Clip>>;
 }
 
 export class ClipApi implements ClipApiEndpoints {
@@ -77,6 +97,20 @@ export class ClipApi implements ClipApiEndpoints {
     return new HelixPaginatedResponseIterator(res, this._client, config);
   }
 
+  async getClipByGame(gameId: string) {
+    const config: RequestConfig = {
+      url: "clips",
+      method: "GET",
+      oauth: false,
+      query: { game_id: gameId },
+    };
+    const res = await this._client.enqueueCall<HelixPaginatedResponse<Clip>>(
+      config
+    );
+
+    return new HelixPaginatedResponseIterator(res, this._client, config);
+  }
+
   async getClipById(clipId: string) {
     const res = await this._client.enqueueCall<HelixResponse<Clip>>({
       url: "clips",
@@ -86,5 +120,20 @@ export class ClipApi implements ClipApiEndpoints {
     });
 
     return res.data[0];
+  }
+
+  async getClipByIds(clipIds: string[]) {
+    const config: RequestConfig = {
+      url: "clips",
+      method: "GET",
+      oauth: false,
+      query: { id: clipIds },
+    };
+
+    const res = await this._client.enqueueCall<HelixPaginatedResponse<Clip>>(
+      config
+    );
+
+    return new HelixPaginatedResponseIterator(res, this._client, config);
   }
 }

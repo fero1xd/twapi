@@ -10,10 +10,12 @@ export interface GetStreamKeyResponse {
   stream_key: StreamKey;
 }
 
-export interface GetStreamsQuery extends Omit<UserInfo, "user_name"> {
-  game_id?: string;
+export interface GetStreamsQuery {
+  user_id?: string | string[];
+  user_name?: string | string[];
+  game_id?: string | string[];
   type?: "all" | "live";
-  language?: string;
+  language?: string | string[];
 }
 
 export interface Stream extends UserInfo {

@@ -21,10 +21,11 @@ export interface PublishedVideo extends UserInfo {
 }
 
 export interface GetVideosQuery {
-  id: string;
+  id: string | string[];
   user_id: string;
   game_id: string;
   language?: string;
+
   period?: "all" | "day" | "month" | "week";
   sort?: "time" | "trending" | "views";
   type?: "all" | "archive" | "highlight" | "upload";

@@ -27,7 +27,13 @@ export default async function callApi(
   if (config.query) {
     parsedUrl += "?";
     Object.entries(config.query).forEach((v, i) => {
-      parsedUrl += `${i > 0 ? "&" : ""}${v[0]}=${v[1]}`;
+      if (Array.isArray(v[1])) {
+        v[1].forEach((q, j) => {
+          parsedUrl += `${j > 0 || i > 0 ? "&" : ""}${v[0]}=${q}`;
+        });
+      } else {
+        parsedUrl += `${i > 0 ? "&" : ""}${v[0]}=${v[1]}`;
+      }
     });
   }
 

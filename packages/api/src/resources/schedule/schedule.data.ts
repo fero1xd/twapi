@@ -2,7 +2,7 @@ import { BroadcasterInfo, Prettify } from "../../internal/types";
 
 export interface GetChannelStreamScheduleQuery {
   broadcaster_id: string;
-  id?: string;
+  id?: string | string[];
   start_time?: string;
   utc_offset?: string;
 }

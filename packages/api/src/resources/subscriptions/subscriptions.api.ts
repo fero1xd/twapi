@@ -13,13 +13,13 @@ export interface SubscriptionsApiEndpoints {
    * Gets a list of users that subscribe to the specified broadcaster.
    *
    * @param broadcasterId The broadcaster’s ID. This ID must match the user ID in the access token.
-   * @param userId Filters the list to include only the specified subscribers.
+   * @param userIds Filters the list to include only the specified subscribers.
    *
    * @returns A paginated list of users that subscribe to the broadcaster.
    */
   getBroadcasterSubscriptions(
     broadcasterId: string,
-    userId?: string
+    userIds?: string[]
   ): Promise<SubscriptionPaginatedResponse<Subscriber>>;
 
   /**
@@ -39,12 +39,12 @@ export interface SubscriptionsApiEndpoints {
 export class SubscriptionsApi implements SubscriptionsApiEndpoints {
   constructor(private _client: ApiClient) {}
 
-  async getBroadcasterSubscriptions(broadcasterId: string, userId?: string) {
+  async getBroadcasterSubscriptions(broadcasterId: string, userIds?: string[]) {
     const config: RequestConfig = {
       url: "subscriptions",
       method: "GET",
       oauth: true,
-      query: createGetSubscriptionsQuery(broadcasterId, userId),
+      query: createGetSubscriptionsQuery(broadcasterId, userIds),
     };
 
     const res = await this._client.enqueueCall<

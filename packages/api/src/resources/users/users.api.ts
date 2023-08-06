@@ -28,11 +28,29 @@ export interface UsersApiEndpoints {
   /**
    * Gets information about one or more users.
    *
+   * @param userIds The list of IDs of the user to get.
+   *
+   * @returns The list of users
+   */
+  getUsersbyId(userIds: string[]): Promise<User[]>;
+
+  /**
+   * Gets information about one or more users.
+   *
    * @param login The login name of the user to get.
    *
    * @returns Found user with the same login
    */
   getUserByName(login: string): Promise<User>;
+
+  /**
+   * Gets information about one or more users.
+   *
+   * @param logins The login names of the user to get.
+   *
+   * @returns The list of users
+   */
+  getUsersByName(logins: string[]): Promise<User[]>;
 
   /**
    * Updates the specified user’s information. The user ID in the OAuth token identifies the user whose information you want to update.
@@ -106,6 +124,17 @@ export class UsersApi implements UsersApiEndpoints {
     return res.data[0];
   }
 
+  async getUsersbyId(userIds: string[]) {
+    const res = await this._client.enqueueCall<HelixResponse<User>>({
+      url: "users",
+      method: "GET",
+      query: { id: userIds },
+      oauth: false,
+    });
+
+    return res.data;
+  }
+
   async getUserByName(login: string) {
     const res = await this._client.enqueueCall<HelixResponse<User>>({
       url: "users",
@@ -115,6 +144,17 @@ export class UsersApi implements UsersApiEndpoints {
     });
 
     return res.data[0];
+  }
+
+  async getUsersByName(logins: string[]) {
+    const res = await this._client.enqueueCall<HelixResponse<User>>({
+      url: "users",
+      method: "GET",
+      query: { login: logins },
+      oauth: false,
+    });
+
+    return res.data;
   }
 
   async updateUser(description?: string) {

@@ -11,7 +11,7 @@ export const createBroadModQuery = (broadcasterId: string, modId?: string) => {
       };
 };
 
-export const createGetEmoteSetsQuery = (emoteSetId: string) => {
+export const createGetEmoteSetsQuery = (emoteSetId: string | string[]) => {
   return {
     emote_set_id: emoteSetId,
   };

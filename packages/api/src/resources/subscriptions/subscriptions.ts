@@ -1,11 +1,11 @@
 export const createGetSubscriptionsQuery = (
   broadcasterId: string,
-  userId?: string
+  userIds?: string | string[]
 ) => {
-  return userId
+  return userIds
     ? {
         broadcaster_id: broadcasterId,
-        user_id: userId,
+        user_id: userIds,
       }
     : {
         broadcaster_id: broadcasterId,

@@ -28,7 +28,7 @@ export interface ChannelPrediction extends BroadcasterInfo {
 
 export interface GetPredictionsQuery {
   broadcaster_id: string;
-  id?: string;
+  id?: string | string[];
 }
 
 export interface CreatePredictionBody {

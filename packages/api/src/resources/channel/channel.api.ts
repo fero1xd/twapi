@@ -28,6 +28,15 @@ export interface ChannelApiEndPoints {
   getChannelInformation(broadcasterId: string): Promise<ChannelInformation>;
 
   /**
+   * Gets information about one or more channels.
+   *
+   * @param broadcasterIds The list ID of the broadcaster whose channel you want to get
+   */
+  getChannelsInformation(
+    broadcasterIds: string[]
+  ): Promise<ChannelInformation[]>;
+
+  /**
    * Updates a channel’s properties.
    *
    * @param broadcasterId The ID of the broadcaster whose channel you want to update. This ID must match the user ID in the user access token.
@@ -102,6 +111,19 @@ export class ChannelApi implements ChannelApiEndPoints {
     });
 
     return res.data[0];
+  }
+
+  async getChannelsInformation(broadcasterIds: string[]) {
+    const res = await this._client.enqueueCall<
+      HelixResponse<ChannelInformation>
+    >({
+      url: "channels",
+      query: createBroadcasterQuery(broadcasterIds),
+      method: "GET",
+      oauth: true,
+    });
+
+    return res.data;
   }
 
   async updateChannelInformation(

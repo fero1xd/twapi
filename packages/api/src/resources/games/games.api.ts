@@ -17,32 +17,34 @@ export interface GamesApiEndpoints {
   /**
    * Gets information about specified categories or games.
    *
-   * @param categoryId The ID of the category or game to get.
+   * @param categoryId The ID or IDs of the category or game to get.
    *
    * @retuns A paginated list of games
    */
   getGamesbyCategory(
-    categoryId: string
+    categoryId: string | string[]
   ): Promise<HelixPaginatedResponseIterator<Game>>;
 
   /**
    * Gets information about specified categories or games.
    *
-   * @param name The name of the category or game to get.
+   * @param name The name or list of names of the category or game to get.
    *
    * @retuns A paginated list of games
    */
-  getGamesbyName(name: string): Promise<HelixPaginatedResponseIterator<Game>>;
+  getGamesbyName(
+    name: string | string[]
+  ): Promise<HelixPaginatedResponseIterator<Game>>;
 
   /**
    * Gets information about specified categories or games.
    *
-   * @param igdbId The [IGDB](https://www.igdb.com) ID of the game to get.
+   * @param igdbId The [IGDB](https://www.igdb.com) ID or IDs of the game to get.
    *
    * @retuns A paginated list of games
    */
   getGamesByIgdbId(
-    igdbId: string
+    igdbId: string | string[]
   ): Promise<HelixPaginatedResponseIterator<Game>>;
 }
 
@@ -63,7 +65,7 @@ export class GamesApi implements GamesApiEndpoints {
     return new HelixPaginatedResponseIterator(res, this._client, config);
   }
 
-  async getGamesbyCategory(categoryId: string) {
+  async getGamesbyCategory(categoryId: string | string[]) {
     const config: RequestConfig = {
       url: "games",
       method: "GET",
@@ -78,7 +80,7 @@ export class GamesApi implements GamesApiEndpoints {
     return new HelixPaginatedResponseIterator(res, this._client, config);
   }
 
-  async getGamesbyName(name: string) {
+  async getGamesbyName(name: string | string[]) {
     const config: RequestConfig = {
       url: "games",
       method: "GET",
@@ -93,7 +95,7 @@ export class GamesApi implements GamesApiEndpoints {
     return new HelixPaginatedResponseIterator(res, this._client, config);
   }
 
-  async getGamesByIgdbId(igdbId: string) {
+  async getGamesByIgdbId(igdbId: string | string[]) {
     const config: RequestConfig = {
       url: "games",
       method: "GET",

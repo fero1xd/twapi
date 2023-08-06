@@ -62,7 +62,7 @@ export interface ChatApiEndpoints {
    *
    *@returns The list of emotes found in the specified emote sets. The list is empty if none of the IDs were found. The list is in the same order as the set IDs specified in the request. Each set contains one or more emoticons.
    */
-  getEmoteSets(emoteSetId: string): Promise<EmoteSet[]>;
+  getEmoteSets(emoteSetId: string | string[]): Promise<EmoteSet[]>;
 
   /**
    * Gets the broadcaster’s list of custom chat badges. The list is empty if the broadcaster hasn’t created custom chat badges.
@@ -138,6 +138,13 @@ export interface ChatApiEndpoints {
   getUserChatColor(userId: string): Promise<UserColor>;
 
   /**
+   * Gets the color used for the user’s name in chat.
+   *
+   * @param userIds The list of IDs of the user whose username color you want to get
+   */
+  getUserChatColors(userIds: string | string[]): Promise<UserColor[]>;
+
+  /**
    * Updates the color used for the user’s name in chat.
    *
    * @param userId The ID of the user whose chat color you want to update. This ID must match the user ID in the access token.
@@ -188,7 +195,7 @@ export class ChatApi implements ChatApiEndpoints {
     return res.data;
   }
 
-  async getEmoteSets(emoteSetId: string) {
+  async getEmoteSets(emoteSetId: string | string[]) {
     const res = await this._client.enqueueCall<
       HelixResponseWithTemplate<EmoteSet>
     >({
@@ -281,6 +288,17 @@ export class ChatApi implements ChatApiEndpoints {
     });
 
     return res.data[0];
+  }
+
+  async getUserChatColors(userIds: string | string[]) {
+    const res = await this._client.enqueueCall<HelixResponse<UserColor>>({
+      url: "chat/color",
+      method: "GET",
+      query: { user_id: userIds },
+      oauth: false,
+    });
+
+    return res.data;
   }
 
   async updateUserChatColor(userId: string, color: ChatColor) {

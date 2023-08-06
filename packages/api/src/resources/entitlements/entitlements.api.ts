@@ -33,7 +33,18 @@ export interface EntitlementsApiEndpoints {
    *
    * @returns A list of entitlements
    */
-  getDropEntitlementsById(id: string): Promise<Entitlement[]>;
+  getDropEntitlementsById(id: string): Promise<Entitlement>;
+
+  /**
+   * Gets an organization’s list of entitlements that have been granted to a game, a user, or both.
+   *
+   * @param ids List of Entitlement ids
+   *
+   * @returns A list of entitlements
+   */
+  getDropEntitlementsByIds(
+    ids: string[]
+  ): Promise<HelixPaginatedResponseIterator<Entitlement>>;
 
   /**
    * Updates the Drop entitlement’s fulfillment status.
@@ -74,7 +85,22 @@ export class EntitlementsApi implements EntitlementsApiEndpoints {
       oauth: false,
     });
 
-    return res.data;
+    return res.data[0];
+  }
+
+  async getDropEntitlementsByIds(ids: string[]) {
+    const config: RequestConfig = {
+      url: "entitlements/drops",
+      method: "GET",
+      query: { id: ids },
+      oauth: false,
+    };
+
+    const res = await this._client.enqueueCall<
+      HelixPaginatedResponse<Entitlement>
+    >(config);
+
+    return new HelixPaginatedResponseIterator(res, this._client, config);
   }
 
   async updateEntitlements(

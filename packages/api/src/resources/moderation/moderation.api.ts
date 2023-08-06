@@ -86,13 +86,13 @@ export interface ModerationApiEndpoints {
    * Gets all users that the broadcaster banned or put in a timeout.
    *
    * @param broadcasterId The ID of the broadcaster whose list of banned users you want to get. This ID must match the user ID in the access token.
-   * @param userId Filter users with this filter
+   * @param userIds Filter users with this filter
    *
    * @returns A paginated list of banned users
    */
   getBannedUsers(
     broadcasterId: string,
-    userId?: string
+    userIds?: string[]
   ): Promise<HelixPaginatedResponseIterator<BannedUser>>;
 
   /**
@@ -160,13 +160,13 @@ export interface ModerationApiEndpoints {
    * Gets all users allowed to moderate the broadcaster’s chat room.
    *
    * @param broadcasterId The ID of the broadcaster whose list of moderators you want to get. This ID must match the user ID in the access token.
-   * @param userId Filter users with this filter
+   * @param userIds Filter users with this filter
    *
    * @returns A paginated list of channel moderators
    */
   getModerators(
     broadcasterId: string,
-    userId?: string
+    userIds?: string[]
   ): Promise<HelixPaginatedResponseIterator<Moderator>>;
 
   /**
@@ -191,13 +191,13 @@ export interface ModerationApiEndpoints {
    * Gets a list of the broadcaster’s VIPs.
    *
    * @param broadcasterId The ID of the broadcaster whose list of VIPs you want to get. This ID must match the user ID in the access token.
-   * @param userId Filters the list for specific VIPs
+   * @param userIds Filters the list for specific VIPs
    *
    * @returns A paginated list of channel vips
    */
   getVips(
     broadcasterId: string,
-    userId?: string
+    userIds?: string[]
   ): Promise<HelixPaginatedResponseIterator<Vip>>;
 
   /**
@@ -298,12 +298,12 @@ export class ModerationApi implements ModerationApiEndpoints {
     return res.data[0];
   }
 
-  async getBannedUsers(broadcasterId: string, userId?: string) {
+  async getBannedUsers(broadcasterId: string, userIds?: string[]) {
     const config: RequestConfig = {
       url: "moderation/banned",
       method: "GET",
       oauth: true,
-      query: createGetBannedUsersQuery(broadcasterId, userId),
+      query: createGetBannedUsersQuery(broadcasterId, userIds),
     };
 
     const res = await this._client.enqueueCall<
@@ -379,12 +379,12 @@ export class ModerationApi implements ModerationApiEndpoints {
     });
   }
 
-  async getModerators(broadcasterId: string, userId?: string) {
+  async getModerators(broadcasterId: string, userIds?: string[]) {
     const config: RequestConfig = {
       url: "moderation/moderators",
       method: "GET",
       oauth: true,
-      query: createGetModeratorsQuery(broadcasterId, userId),
+      query: createGetModeratorsQuery(broadcasterId, userIds),
     };
 
     const res = await this._client.enqueueCall<
@@ -412,12 +412,12 @@ export class ModerationApi implements ModerationApiEndpoints {
     });
   }
 
-  async getVips(broadcasterId: string, userId?: string) {
+  async getVips(broadcasterId: string, userIds?: string[]) {
     const config: RequestConfig = {
       url: "channels/vips",
       method: "GET",
       oauth: true,
-      query: createGetVipsQuery(broadcasterId, userId),
+      query: createGetVipsQuery(broadcasterId, userIds),
     };
 
     const res = await this._client.enqueueCall<HelixPaginatedResponse<Vip>>(

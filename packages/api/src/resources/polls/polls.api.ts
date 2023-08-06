@@ -14,13 +14,13 @@ export interface PollsApiEndpoints {
        Polls are available for 90 days after they’re created.
 
      * @param broadcasterId The ID of the broadcaster that created the polls. This ID must match the user ID in the user access token.
-     * @param id IDs that identify the polls to return
+     * @param ids IDs that identify the polls to return
      * 
      * @returns A paginated list of polls
   */
   getPolls(
     broadcasterId: string,
-    id?: string
+    ids?: string[]
   ): Promise<HelixPaginatedResponseIterator<Poll>>;
 
   /**
@@ -45,11 +45,11 @@ export interface PollsApiEndpoints {
 export class PollsApi implements PollsApiEndpoints {
   constructor(private _client: ApiClient) {}
 
-  async getPolls(broadcasterId: string, id?: string) {
+  async getPolls(broadcasterId: string, ids?: string[]) {
     const config: RequestConfig = {
       url: "polls",
       method: "GET",
-      query: createGetPollsQuery(broadcasterId, id),
+      query: createGetPollsQuery(broadcasterId, ids),
       oauth: true,
     };
 

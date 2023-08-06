@@ -22,11 +22,11 @@ export interface VideosApiEndpoints {
   /**
    * Deletes one or more videos. You may delete past broadcasts, highlights, or uploads.
    *
-   * @param id The list of videos to delete.
+   * @param ids The list of videos to delete.
    *
    * @returns The list of IDs of the videos that were deleted.
    */
-  deleteVideos(id: string): Promise<string[]>;
+  deleteVideos(ids: string | string[]): Promise<string[]>;
 }
 
 export class VideosApi implements VideosApiEndpoints {
@@ -47,12 +47,12 @@ export class VideosApi implements VideosApiEndpoints {
     return new HelixPaginatedResponseIterator(res, this._client, config);
   }
 
-  async deleteVideos(id: string) {
+  async deleteVideos(ids: string | string[]) {
     const res = await this._client.enqueueCall<HelixResponse<string>>({
       url: "videos",
       method: "DELETE",
       oauth: true,
-      query: { id },
+      query: { id: ids },
     });
 
     return res.data;

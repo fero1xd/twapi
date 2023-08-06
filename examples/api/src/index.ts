@@ -15,7 +15,12 @@ const main = async () => {
     broadcaster_id: "642902413",
   };
 
-  const res = await client.users.getUserbyId("70225218");
+  const res = await client.channel.getChannelsInformation([
+    "70225218",
+    "642902413",
+  ]);
+
+  console.log(res);
 };
 
 main();

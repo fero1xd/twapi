@@ -7,8 +7,6 @@ import {
   GetChannelStreamScheduleQuery,
   HelixScheduleResponse,
   HelixScheduleResponseData,
-  ScheduleSegment,
-  ScheduleVacation,
   UpdateChannelStreamScheduleQuery,
   UpdateChannelStreamScheduleSegmentBody,
 } from "./schedule.data";
