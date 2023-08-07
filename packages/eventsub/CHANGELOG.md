@@ -1,5 +1,11 @@
 # @twapi/eventsub
 
+## 0.3.0
+
+### Minor Changes
+
+- 5e7efb9: feat(eventsub): added reconnect handler
+
 ## 0.2.1
 
 ### Patch Changes
