@@ -48,6 +48,9 @@ export class EventSub {
   // Event listener when we first connect to twitch, doesnt run on subsequent reconnects
   private connectedListener?: ConnectedListener;
 
+  // Called before reconnect
+  private reconnectListener?: () => void;
+
   // Take care of above
   private hasCalled: boolean = false;
 
@@ -150,6 +153,8 @@ export class EventSub {
       this.log.info("Now reconnecting....");
       this.reconnect = false;
 
+      this.reconnectListener?.();
+
       this.run();
     }
   }
@@ -245,6 +250,9 @@ export class EventSub {
 
         if (this.reconnect) {
           this.reconnect = false;
+
+          this.reconnectListener?.();
+
           this.connection?.close();
         }
 
@@ -277,7 +285,7 @@ export class EventSub {
   private _resetConnectionLostTimeout() {
     clearTimeout(this.checkConnectionLostTimeout);
     // +10 seconds for safety
-    this._startTicking(this.keepaliveTimeout + 10);
+    this._startTicking(2);
   }
 
   /**
@@ -451,6 +459,13 @@ export class EventSub {
    */
   public onConnected(handler: ConnectedListener) {
     this.connectedListener = handler;
+  }
+
+  /**
+   * @param handler Callback function, called before a reconnect
+   */
+  public onReconnect(handler: () => void) {
+    this.reconnectListener = handler;
   }
 
   /**
