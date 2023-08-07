@@ -25,13 +25,12 @@ export interface RefreshUserAccessTokenResponse
 
 export interface IAuthProvider {
   getUserAccessToken(): Promise<string | undefined>;
-  getScopes(): string[] | undefined;
+  getAppAccessToken(): Promise<string | undefined>;
 
-  getUserId(): string | undefined;
-  getUserName(): string | undefined;
+  getUserId(): Promise<string | undefined>;
+  getUserName(): Promise<string | undefined>;
+  getScopes(): Promise<string[] | undefined>;
 
   getClientId(): string;
   getClientSecret(): string;
-
-  getAppAccessToken(): Promise<string | undefined>;
 }

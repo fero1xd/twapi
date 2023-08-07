@@ -10,9 +10,10 @@ const main = async () => {
 
   const auth = new AuthProvider(credentials);
 
-  console.log(await auth.getUserAccessToken());
+  console.log(await auth.getUserName());
 
-  console.log(auth.getUserName());
+  console.log(await auth.getUserId());
+  console.log(await auth.getUserId());
 };
 
 main();

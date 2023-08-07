@@ -17,9 +17,40 @@ export class AuthProvider implements IAuthProvider {
   private _userId?: string;
   private _userLogin?: string;
 
+  private _initialUserTokenRequest = false;
+
   constructor(credentials: Credentials) {
     this._credentials = credentials;
     this._log = createLogger("twapi:auth");
+  }
+
+  async getScopes() {
+    if (!this._initialUserTokenRequest) {
+      await this.getUserAccessToken();
+    }
+    return this._scopes;
+  }
+
+  async getUserId() {
+    if (!this._initialUserTokenRequest) {
+      await this.getUserAccessToken();
+    }
+    return this._userId;
+  }
+
+  async getUserName() {
+    if (!this._initialUserTokenRequest) {
+      await this.getUserAccessToken();
+    }
+    return this._userLogin;
+  }
+
+  getClientId() {
+    return this._credentials.clientId;
+  }
+
+  getClientSecret() {
+    return this._credentials.clientSecret;
   }
 
   async getUserAccessToken() {
@@ -42,10 +73,13 @@ export class AuthProvider implements IAuthProvider {
 
       // If token was valid and not expired
       if (tokenInfo) {
+        this._initialUserTokenRequest = true;
+
         if (tokenInfo.client_id !== this._credentials.clientId) {
           this._log.error(
             "Client id in the user access token doesnt matches the client id passed in."
           );
+
           return;
         }
 
@@ -53,6 +87,7 @@ export class AuthProvider implements IAuthProvider {
 
         this._userId = tokenInfo.user_id;
         this._userLogin = tokenInfo.login;
+        this._scopes = tokenInfo.scopes;
         this._credentials.setOAuthTokenExpires(
           getExpirationDate(tokenInfo.expires_in)
         );
@@ -61,38 +96,23 @@ export class AuthProvider implements IAuthProvider {
       }
 
       if (refreshToken) {
-        const newToken = await refreshUserAccessToken(this._credentials);
-        if (newToken) {
-          this._log.info("Successfully got a new user access token.");
-
-          this._credentials.setOAuthToken(newToken.access_token);
-          this._credentials.setOAuthTokenExpires(
-            getExpirationDate(newToken.expires_in)
-          );
-
-          return newToken.access_token;
+        const accessToken = await this._refreshUserAccessToken();
+        this._initialUserTokenRequest = true;
+        if (accessToken) {
+          return accessToken;
         }
       }
 
-      return;
+      this._initialUserTokenRequest = true;
+      return oauthToken;
     }
 
     // User Access token expired
     if (new Date() > this._credentials.oauthTokenExpires!) {
       // If refresh token was provided, just refresh the token
       if (refreshToken) {
-        const newToken = await refreshUserAccessToken(this._credentials);
-        if (newToken) {
-          this._log.info("Successfully got a new user access token.");
-
-          this._credentials.setOAuthToken(newToken.access_token);
-          this._scopes = newToken.scopes;
-          this._credentials.setOAuthTokenExpires(
-            getExpirationDate(newToken.expires_in)
-          );
-
-          return newToken.access_token;
-        }
+        const accessToken = await this._refreshUserAccessToken();
+        if (accessToken) return accessToken;
       } else {
         this._log.warn(
           "No refresh token provided, cannot refresh user access token."
@@ -102,26 +122,6 @@ export class AuthProvider implements IAuthProvider {
       // Else return the old token
       return oauthToken;
     }
-  }
-
-  getScopes() {
-    return this._scopes;
-  }
-
-  getUserId() {
-    return this._userId;
-  }
-
-  getUserName() {
-    return this._userLogin;
-  }
-
-  getClientId() {
-    return this._credentials.clientId;
-  }
-
-  getClientSecret() {
-    return this._credentials.clientSecret;
   }
 
   async getAppAccessToken() {
@@ -135,35 +135,44 @@ export class AuthProvider implements IAuthProvider {
 
     // First time calling this method
     if (!appAccessToken || !expiresIn) {
-      const newAppToken = await fetchAppAccessToken(this._credentials);
-      if (newAppToken) {
-        this._log.info("Got app access token for this firt time.");
-
-        this._credentials.setAppAccessToken(newAppToken.access_token);
-
-        this._credentials.setAppAccessTokenExpiration(
-          getExpirationDate(newAppToken.expires_in)
-        );
-        return newAppToken.access_token;
-      }
+      const newAppToken = await this._fetchAppAccessToken();
+      if (newAppToken) return newAppToken;
     }
 
     // App access token expired !
     if (expiresIn && new Date() > expiresIn) {
       this._log.warn("App access token expired, trying to get a new one.");
 
-      const newAppToken = await fetchAppAccessToken(this._credentials);
-      if (newAppToken) {
-        this._log.info("Got a new app access token.");
+      const newAppToken = await this._fetchAppAccessToken();
+      if (newAppToken) return newAppToken;
+    }
+  }
 
-        this._credentials.setAppAccessToken(newAppToken.access_token);
+  private async _refreshUserAccessToken() {
+    const newToken = await refreshUserAccessToken(this._credentials);
+    if (newToken) {
+      this._log.info("Successfully got a new user access token.");
 
-        this._credentials.setAppAccessTokenExpiration(
-          getExpirationDate(newAppToken.expires_in)
-        );
+      this._credentials.setOAuthToken(newToken.access_token);
+      this._credentials.setOAuthTokenExpires(
+        getExpirationDate(newToken.expires_in)
+      );
 
-        return newAppToken.access_token;
-      }
+      return newToken.access_token;
+    }
+  }
+
+  private async _fetchAppAccessToken() {
+    const newAppToken = await fetchAppAccessToken(this._credentials);
+    if (newAppToken) {
+      this._log.info("Got app access token for this firt time.");
+
+      this._credentials.setAppAccessToken(newAppToken.access_token);
+
+      this._credentials.setAppAccessTokenExpiration(
+        getExpirationDate(newAppToken.expires_in)
+      );
+      return newAppToken.access_token;
     }
   }
 }
