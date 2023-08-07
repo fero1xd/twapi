@@ -13,6 +13,7 @@
   "license": "ISC",
   "devDependencies": {
     "@twapi/api": "workspace:^",
+    "@twapi/auth": "workspace:^",
     "@twapi/tsconfig": "workspace:^",
     "@types/node": "^20.4.2",
     "dotenv": "^16.3.1",

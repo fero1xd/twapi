@@ -1,39 +1,28 @@
 import { Logger, createLogger } from "@twapi/logger";
-import { ApiCredentials } from "./credentials";
 import { RateLimiter } from "./internal/queue/ratelimiter";
-import callApi, {
-  transformTwitchApiResponse,
-  validateToken,
-} from "./internal/api";
+import callApi, { transformTwitchApiResponse } from "./internal/api";
 import { RequestConfig } from "./internal/interfaces";
 import { Resources } from "./resources/resources";
-import { AuthenticationError, HelixError } from "./errors";
+import { AuthProvider } from "@twapi/auth";
 import retry from "retry";
 
 export class ApiClient {
-  private _credentials: ApiCredentials;
-
   private _log: Logger;
 
   private _rateLimiter: RateLimiter;
   private _appRateLimiter: RateLimiter;
 
   private _resources: Resources;
-  private _authDone: boolean = false;
-  private _onAuthDone: { handler: () => void }[] = [];
+  private _authProvider: AuthProvider;
 
-  private _userId?: string;
-
-  constructor(credentials: ApiCredentials) {
-    this._credentials = credentials;
+  constructor(authProvider: AuthProvider) {
     this._log = createLogger("twapi:api");
 
     this._rateLimiter = this._createGeneralRateLimiter();
     this._appRateLimiter = this._createGeneralRateLimiter();
 
-    this._authenticate();
-
     this._resources = new Resources(this);
+    this._authProvider = authProvider;
   }
 
   private _createGeneralRateLimiter() {
@@ -42,57 +31,17 @@ export class ApiClient {
       performRequest: async (config) => {
         return await callApi(
           config,
-          this._credentials.clientId,
-          this._credentials.appAccessToken,
-          config.oauth ? this._credentials.oauthToken : undefined
+          this._authProvider.getClientId(),
+          await this._authProvider.getAppAccessToken(),
+          config.oauth
+            ? await this._authProvider.getUserAccessToken()
+            : undefined
         );
       },
     });
   }
 
-  private _addOnAuthDone(handler: () => void) {
-    const item = { handler };
-    this._onAuthDone.push(item);
-
-    return () => {
-      this._onAuthDone.splice(this._onAuthDone.indexOf(item), 1);
-    };
-  }
-
-  private async _authenticate() {
-    try {
-      const data = await validateToken(this._credentials.oauthToken);
-
-      if (data.client_id !== this._credentials.clientId) {
-        this._log.error(
-          "OAuth token's client id doesnt match the provided client id."
-        );
-        return;
-      }
-
-      this._userId = data.user_id;
-      this._log.info("Auth successful, user id is " + this._userId);
-      this._onAuthDone.forEach((l) => l.handler());
-    } catch (e) {
-      if (e instanceof HelixError) {
-        this._log.error("Authentication failed, invalid access token");
-      }
-    } finally {
-      this._authDone = true;
-      this._onAuthDone.forEach((l) => l.handler());
-    }
-  }
-
   async enqueueCall<T = unknown>(config: RequestConfig) {
-    if (config.oauth && !this._authDone) {
-      this._log.warn("Pending authentication");
-      await this._waitForAuth();
-    }
-
-    if (config.oauth && !this.userId) {
-      throw new AuthenticationError();
-    }
-
     const op = retry.operation({
       retries: 3,
       minTimeout: 500,
@@ -120,25 +69,6 @@ export class ApiClient {
     });
   }
 
-  private _waitForAuth() {
-    return new Promise((res, rej) => {
-      let timeout: NodeJS.Timeout;
-
-      const unsub = this._addOnAuthDone(() => {
-        if (timeout) clearTimeout(timeout);
-        unsub();
-
-        this._userId ? res(true) : rej(new AuthenticationError());
-      });
-
-      timeout = setTimeout(() => {
-        this._log.error("Auth timed out");
-        unsub();
-        rej(new AuthenticationError());
-      }, 3000);
-    });
-  }
-
   public get channel() {
     return this._resources.channel;
   }
@@ -157,10 +87,6 @@ export class ApiClient {
 
   public get chat() {
     return this._resources.chat;
-  }
-
-  public get userId() {
-    return this._userId;
   }
 
   public get clip() {

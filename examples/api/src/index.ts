@@ -1,24 +1,18 @@
 import "dotenv/config";
-import { ApiClient, ApiCredentials } from "@twapi/api";
+import { ApiClient } from "@twapi/api";
+import { AuthProvider, Credentials } from "@twapi/auth";
 
-const credentials = new ApiCredentials(
+const credentials = new Credentials(
   process.env.SAMPLE_OAUTH_TOKEN!,
   process.env.CLIENT_ID!,
-  process.env.SAMPLE_APP_ACCESS_TOKEN!
+  process.env.CLIENT_SECRET!
 );
 
 const main = async () => {
-  const client = new ApiClient(credentials);
+  const authProvider = new AuthProvider(credentials);
+  const client = new ApiClient(authProvider);
 
-  const q = {
-    moderator_id: "642902413",
-    broadcaster_id: "642902413",
-  };
-
-  const res = await client.channel.getChannelsInformation([
-    "70225218",
-    "642902413",
-  ]);
+  const res = await client.channel.getChannelInformation("70225218");
 
   console.log(res);
 };

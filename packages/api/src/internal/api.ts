@@ -9,7 +9,7 @@ const log = createLogger("twapi:api");
 export default async function callApi(
   config: RequestConfig,
   clientId: string,
-  appAccessToken: string,
+  appAccessToken?: string,
   oauthToken?: string
 ) {
   const { oauth, method, url, body } = config;

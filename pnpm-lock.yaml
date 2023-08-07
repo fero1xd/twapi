@@ -63,6 +63,9 @@ importers:
       '@twapi/api':
         specifier: workspace:^
         version: link:../../packages/api
+      '@twapi/auth':
+        specifier: workspace:^
+        version: link:../../packages/auth
       '@twapi/tsconfig':
         specifier: workspace:^
         version: link:../../packages/config/tsconfig
@@ -141,6 +144,9 @@ importers:
 
   packages/api:
     devDependencies:
+      '@twapi/auth':
+        specifier: workspace:^
+        version: link:../auth
       '@twapi/logger':
         specifier: workspace:^
         version: link:../logger
