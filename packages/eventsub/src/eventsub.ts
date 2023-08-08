@@ -93,27 +93,28 @@ export class EventSub {
     }
   }
 
-  private _registerPendingListeners() {
+  private async _registerListenersAfterReconnect() {
     if (this.listeners.length > 0) {
       this.log.info("Resubscribing to events after reconnect");
 
-      this.listeners.forEach(async (l) => {
+      for (let i = this.listeners.length - 1; i >= 0; i--) {
+        const l = this.listeners[i];
         const ogEvent = l.getSubscriptionName();
-
         await this._createSub(ogEvent, l.getCondition(), l, false);
-      });
+      }
     }
+  }
 
+  private async _registerPendingListeners() {
     if (this.pendingListeners.length > 0) {
       this.log.info("Registering pending listeners");
 
-      this.pendingListeners.forEach(async (l) => {
+      for (let i = this.pendingListeners.length - 1; i >= 0; i--) {
+        const l = this.pendingListeners[i];
         const ogEvent = l.getSubscriptionName();
-
         await this._createSub(ogEvent, l.getCondition(), l);
-      });
-
-      this.pendingListeners = [];
+        this.pendingListeners.splice(i, 1);
+      }
     }
   }
 
@@ -245,11 +246,13 @@ export class EventSub {
         }
 
         if (this.reconnect) {
+          // It means we are going to reconnect with url that already has the subscriptions
           this.reconnect = false;
-
           this.reconnectListener?.();
 
           this.connection?.close();
+        } else {
+          this._registerListenersAfterReconnect();
         }
 
         this._registerPendingListeners();
