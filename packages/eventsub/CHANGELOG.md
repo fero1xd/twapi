@@ -1,5 +1,16 @@
 # @twapi/eventsub
 
+## 1.0.0
+
+### Major Changes
+
+- 3a718f9: refactor(eventsub): using custom auth solution
+
+### Patch Changes
+
+- Updated dependencies [f792c5f]
+  - @twapi/auth@0.2.0
+
 ## 0.3.0
 
 ### Minor Changes

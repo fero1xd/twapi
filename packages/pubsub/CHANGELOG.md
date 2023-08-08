@@ -1,5 +1,11 @@
 # @twapi/pubsub
 
+## 1.0.0
+
+### Major Changes
+
+- 3a718f9: refactor(pubsub): using custom auth solution
+
 ## 0.3.0
 
 ### Minor Changes
