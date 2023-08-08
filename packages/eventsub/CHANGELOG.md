@@ -1,5 +1,17 @@
 # @twapi/eventsub
 
+## 1.0.0
+
+### Major Changes
+
+- 61e9393: feat(auth): always returning an user access token
+  feat(eventsub): using custom auth solution
+
+### Patch Changes
+
+- Updated dependencies [61e9393]
+  - @twapi/auth@0.2.0
+
 ## 0.3.0
 
 ### Minor Changes
