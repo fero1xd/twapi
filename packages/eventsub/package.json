@@ -38,6 +38,7 @@
     "access": "public"
   },
   "dependencies": {
+    "@twapi/auth": "workspace:^",
     "@twapi/logger": "workspace:^"
   }
 }

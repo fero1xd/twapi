@@ -100,6 +100,9 @@ importers:
 
   examples/eventsub:
     dependencies:
+      '@twapi/auth':
+        specifier: workspace:^
+        version: link:../../packages/auth
       '@twapi/eventsub':
         specifier: workspace:^
         version: link:../../packages/eventsub
@@ -206,6 +209,9 @@ importers:
 
   packages/eventsub:
     dependencies:
+      '@twapi/auth':
+        specifier: workspace:^
+        version: link:../auth
       '@twapi/logger':
         specifier: workspace:^
         version: link:../logger

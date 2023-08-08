@@ -81,10 +81,10 @@ export class AuthProvider implements IAuthProvider {
             "Client id in the user access token doesnt matches the client id passed in."
           );
 
-          return;
+          return oauthToken;
         }
 
-        this._log.info("Got user access token expires field");
+        this._log.info("Got user access token for the first time.");
 
         this._userId = tokenInfo.user_id;
         this._userLogin = tokenInfo.login;
@@ -101,6 +101,10 @@ export class AuthProvider implements IAuthProvider {
         this._initialUserTokenRequest = true;
         if (accessToken) {
           return accessToken;
+        } else {
+          this._log.warn(
+            "No refresh token provided, cannot refresh user access token."
+          );
         }
       }
 
@@ -113,16 +117,22 @@ export class AuthProvider implements IAuthProvider {
       // If refresh token was provided, just refresh the token
       if (refreshToken) {
         const accessToken = await this._refreshUserAccessToken();
-        if (accessToken) return accessToken;
+        if (accessToken) {
+          return accessToken;
+        } else {
+          this._log.warn(
+            "Tried to refresh user access token but didnt get any response."
+          );
+        }
       } else {
         this._log.warn(
           "No refresh token provided, cannot refresh user access token."
         );
       }
-
-      // Else return the old token
-      return oauthToken;
     }
+
+    // Return old oauth token
+    return oauthToken;
   }
 
   async getAppAccessToken() {

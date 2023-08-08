@@ -24,7 +24,7 @@ export interface RefreshUserAccessTokenResponse
 }
 
 export interface IAuthProvider {
-  getUserAccessToken(): Promise<string | undefined>;
+  getUserAccessToken(): Promise<string>;
   getAppAccessToken(): Promise<string | undefined>;
 
   getUserId(): Promise<string | undefined>;

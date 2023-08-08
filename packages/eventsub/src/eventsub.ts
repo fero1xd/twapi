@@ -16,6 +16,7 @@ import {
   ValidSubscription,
   WebsocketMessage,
 } from "./internal/types";
+import { AuthProvider } from "@twapi/auth";
 
 /**
  * Create a new instance whenever you want to interact with twitch eventsub system
@@ -33,11 +34,8 @@ export class EventSub {
   // Number of seconds after which connection is meant to be lost
   private keepaliveTimeout: number = -1;
 
-  // User oauth token
-  private readonly oauthToken: string;
-
-  // Client id
-  private readonly clientId: string;
+  // Auth Provider
+  private readonly _authProvider: AuthProvider;
 
   // All currently active listeners
   private listeners: Listener[] = [];
@@ -62,12 +60,10 @@ export class EventSub {
 
   /**
    * ---------CONSTRUCTOR--------
-   * @param oauthToken A user oauth token. It is used to create any subscription
-   * @param clientId Application id
+   * @param authProvider Twitch Authentication provider for eventsub
    */
-  constructor(oauthToken: string, clientId: string) {
-    this.oauthToken = oauthToken;
-    this.clientId = clientId;
+  constructor(authProvider: AuthProvider) {
+    this._authProvider = authProvider;
     this.log = createLogger("eventsub");
   }
 
@@ -285,7 +281,7 @@ export class EventSub {
   private _resetConnectionLostTimeout() {
     clearTimeout(this.checkConnectionLostTimeout);
     // +10 seconds for safety
-    this._startTicking(2);
+    this._startTicking(this.keepaliveTimeout + 10);
   }
 
   /**
@@ -347,15 +343,21 @@ export class EventSub {
 
     if (!this.sessionId) return;
 
-    return await createSubscription(this.oauthToken, this.clientId, {
-      type: event,
-      version: "1",
-      transport: {
-        method: "websocket",
-        session_id: this.sessionId,
-      },
-      condition,
-    });
+    const accessToken = await this._authProvider.getUserAccessToken();
+
+    return await createSubscription(
+      accessToken,
+      this._authProvider.getClientId(),
+      {
+        type: event,
+        version: "1",
+        transport: {
+          method: "websocket",
+          session_id: this.sessionId,
+        },
+        condition,
+      }
+    );
   }
 
   /**
@@ -398,7 +400,9 @@ export class EventSub {
    */
   private async _deleteSubscription(id: string) {
     this._assertConnectionIsOpen();
-    await deleteSubscription(id, this.oauthToken, this.clientId);
+    const accessToken = await this._authProvider.getUserAccessToken();
+
+    await deleteSubscription(id, accessToken, this._authProvider.getClientId());
   }
 
   /**
