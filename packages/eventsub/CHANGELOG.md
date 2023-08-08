@@ -1,5 +1,11 @@
 # @twapi/eventsub
 
+## 1.0.1
+
+### Patch Changes
+
+- 047822e: fix(eventsub): not re-subscribing to events when we have reconnect url
+
 ## 1.0.0
 
 ### Major Changes
