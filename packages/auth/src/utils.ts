@@ -1,3 +1,4 @@
+import { Logger } from "@twapi/logger";
 import { Credentials } from "./credentials";
 import {
   GetAppAccessTokenInfoResponse,
@@ -7,7 +8,10 @@ import {
 } from "./interfaces";
 import { fetch, Headers } from "cross-fetch";
 
-export const fetchAppAccessToken = async (credentials: Credentials) => {
+export const fetchAppAccessToken = async (
+  credentials: Credentials,
+  _log: Logger
+) => {
   const headers = new Headers();
   headers.set("Content-Type", "application/json");
 
@@ -22,8 +26,8 @@ export const fetchAppAccessToken = async (credentials: Credentials) => {
   });
 
   if (!res.ok) {
-    console.log("Request failed");
-    console.log(await res.json());
+    _log.error(`Fetch App access token failed.`);
+    console.log(await res.text());
     return;
   }
 
@@ -40,7 +44,8 @@ export const fetchAccessTokenInfo = async <
   T extends GetUserAccessTokenInfoResponse | GetAppAccessTokenInfoResponse
 >(
   token: string,
-  app: boolean
+  app: boolean,
+  _log: Logger
 ) => {
   const headers = new Headers();
   headers.set("Content-Type", "application/json");
@@ -51,8 +56,8 @@ export const fetchAccessTokenInfo = async <
   });
 
   if (!res.ok) {
-    console.log("Request failed");
-    console.log(await res.json());
+    _log.error(`Fetch ${app ? "App" : "User"} Access token info failed.`);
+    console.log(await res.text());
     return;
   }
 
@@ -65,7 +70,10 @@ export const fetchAccessTokenInfo = async <
   return JSON.parse(text) as T;
 };
 
-export const refreshUserAccessToken = async (credentials: Credentials) => {
+export const refreshUserAccessToken = async (
+  credentials: Credentials,
+  _log: Logger
+) => {
   const headers = new Headers();
   headers.set("Content-Type", "application/json");
 
@@ -81,8 +89,8 @@ export const refreshUserAccessToken = async (credentials: Credentials) => {
   });
 
   if (!res.ok) {
-    console.log("Request failed");
-    console.log(await res.json());
+    _log.error("Refresh user access token request failed.");
+    console.log(await res.text());
     return;
   }
 

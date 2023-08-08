@@ -68,7 +68,8 @@ export class AuthProvider implements IAuthProvider {
       const tokenInfo =
         await fetchAccessTokenInfo<GetUserAccessTokenInfoResponse>(
           oauthToken,
-          false
+          false,
+          this._log
         );
 
       // If token was valid and not expired
@@ -149,7 +150,7 @@ export class AuthProvider implements IAuthProvider {
   }
 
   private async _refreshUserAccessToken() {
-    const newToken = await refreshUserAccessToken(this._credentials);
+    const newToken = await refreshUserAccessToken(this._credentials, this._log);
     if (newToken) {
       this._log.info("Successfully got a new user access token.");
 
@@ -163,7 +164,7 @@ export class AuthProvider implements IAuthProvider {
   }
 
   private async _fetchAppAccessToken() {
-    const newAppToken = await fetchAppAccessToken(this._credentials);
+    const newAppToken = await fetchAppAccessToken(this._credentials, this._log);
     if (newAppToken) {
       this._log.info("Got app access token for this firt time.");
 

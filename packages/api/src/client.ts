@@ -69,6 +69,14 @@ export class ApiClient {
     });
   }
 
+  public async getUserId() {
+    return await this._authProvider.getUserId();
+  }
+
+  public async getUserName() {
+    return await this._authProvider.getUserName();
+  }
+
   public get channel() {
     return this._resources.channel;
   }

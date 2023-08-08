@@ -185,6 +185,7 @@ export class ChannelApi implements ChannelApiEndPoints {
       {
         url: "channels/commercial",
         method: "POST",
+
         query: createCommercialQuery(broadcasterId, length),
         oauth: true,
       }

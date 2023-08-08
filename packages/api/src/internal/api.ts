@@ -32,7 +32,8 @@ export default async function callApi(
           parsedUrl += `${j > 0 || i > 0 ? "&" : ""}${v[0]}=${q}`;
         });
       } else {
-        parsedUrl += `${i > 0 ? "&" : ""}${v[0]}=${v[1]}`;
+        v[1] !== undefined &&
+          (parsedUrl += `${i > 0 ? "&" : ""}${v[0]}=${v[1]}`);
       }
     });
   }
