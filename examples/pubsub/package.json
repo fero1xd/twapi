@@ -18,6 +18,7 @@
     "tsup": "^7.1.0"
   },
   "dependencies": {
+    "@twapi/auth": "workspace:^",
     "@twapi/pubsub": "workspace:^"
   }
 }

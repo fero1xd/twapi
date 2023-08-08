@@ -14,14 +14,15 @@ import {
   ResponseListener,
   WebsocketMessage,
 } from "./internal/types";
+import { AuthProvider } from "@twapi/auth";
 import { replacePlaceholders } from "./internal/utils";
 
 export class PubSub {
   // Websocket Connection to twitch
   private connection?: WebSocket;
 
-  // User access token
-  private oauthToken: string;
+  // Custom auth provider
+  private _authProvider: AuthProvider;
 
   // Logger
   private log: Logger;
@@ -61,11 +62,11 @@ export class PubSub {
 
   /**
    * --------CONSTRUCTOR-------
-   * @param oauthToken A user access token used to subscribe to events
+   * @param authProvider Twitch Authentication provider for pubsub
    */
-  constructor(oauthToken: string) {
-    this.oauthToken = oauthToken;
+  constructor(authProvider: AuthProvider) {
     this.log = createLogger("pubsub");
+    this._authProvider = authProvider;
   }
 
   /**
@@ -224,7 +225,7 @@ export class PubSub {
    * @param listener The listener class
    * @param add Wether to add this listener to main listeners array
    */
-  private _subHelper(listener: Listener, add = true) {
+  private async _subHelper(listener: Listener, add = true) {
     let timeout: NodeJS.Timeout;
     const finalTopic = listener.getParsedTopic();
 
@@ -264,12 +265,14 @@ export class PubSub {
       listener.triggerTimeoutHandler();
     }, 2000);
 
+    const accessToken = await this._authProvider.getUserAccessToken();
+
     this._send({
       type: MessageType.LISTEN,
       nonce: listener.getNonce(),
       data: {
         topics: [listener.getParsedTopic()],
-        auth_token: this.oauthToken,
+        auth_token: accessToken,
       },
     });
   }

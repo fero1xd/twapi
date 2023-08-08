@@ -128,6 +128,9 @@ importers:
 
   examples/pubsub:
     dependencies:
+      '@twapi/auth':
+        specifier: workspace:^
+        version: link:../../packages/auth
       '@twapi/pubsub':
         specifier: workspace:^
         version: link:../../packages/pubsub
@@ -274,6 +277,9 @@ importers:
 
   packages/pubsub:
     devDependencies:
+      '@twapi/auth':
+        specifier: workspace:^
+        version: link:../auth
       '@twapi/logger':
         specifier: workspace:^
         version: link:../logger

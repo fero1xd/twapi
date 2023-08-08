@@ -1,7 +1,15 @@
 import { PubSub } from "@twapi/pubsub";
 import "dotenv/config";
 
-const pubusb = new PubSub(process.env.SAMPLE_OAUTH_TOKEN!);
+import { AuthProvider, Credentials } from "@twapi/auth";
+
+const credentials = new Credentials(
+  process.env.SAMPLE_OAUTH_TOKEN!,
+  process.env.CLIENT_ID!,
+  process.env.CLIENT_SECRET!
+);
+
+const pubusb = new PubSub(new AuthProvider(credentials));
 
 const listener = pubusb.register("chatModeratorActions", {
   channel_id: 642902413,
