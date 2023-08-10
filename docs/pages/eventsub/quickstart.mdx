@@ -52,11 +52,20 @@ Follow these links to obtain your own credentials
 
 ```ts copy filename="src/index.ts"
 import { EventSub } from "@twapi/eventsub";
+import { Credentials, AuthProvider } from "@twapi/auth"
 
 const ACCESS_TOKEN = "........";
 const CLIENT_ID = ".........";
+const CLIENT_SECRET = "......";
 
-const client = new EventSub(ACCESS_TOKEN, CLIENT_ID);
+const authProvider = new AuthProvider(
+  new Credentials(
+    ACCESS_TOKEN,
+    CLIENT_ID,
+    CLIENT_SECRET
+  )
+)
+const client = new EventSub(authProvider);
 
 client.run((sessionId) => {
   console.log("[+] Successfuly connected with session id: " + sessionId);

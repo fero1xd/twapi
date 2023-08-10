@@ -45,9 +45,20 @@ Follow these links to obtain your own credentials
 ### Connecting to Twitch Pubsub
 ```ts copy filename="src/index.ts"
 import { PubSub } from '@twapi/pubsub'
+import { Credentials, AuthProvider } from "@twapi/auth"
 
-const SAMPLE_OAUTH_TOKEN = ".......";
-const pubsub = new PubSub(SAMPLE_OAUTH_TOKEN);
+const ACCESS_TOKEN = "........";
+const CLIENT_ID = ".........";
+const CLIENT_SECRET = "......";
+
+const authProvider = new AuthProvider(
+  new Credentials(
+    ACCESS_TOKEN,
+    CLIENT_ID,
+    CLIENT_SECRET
+  )
+);
+const pubsub = new PubSub(authProvider);
 
 pubsub.onConnected(() => {
   console.log("[+] Successfully Connected")

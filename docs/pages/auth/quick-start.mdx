@@ -1,0 +1,61 @@
+import { Callout, Steps, Tabs, Tab } from "nextra-theme-docs";
+
+# Twitch Authentication
+
+First get the following credentials from twitch:
+
+- A User Access Token
+- [Client ID](https://dev.twitch.tv/console)
+- [Client Secret](https://dev.twitch.tv/console)
+- User refresh token (_optional_)
+
+<Steps>
+    ### Install the package
+    
+    Use any package manager of your choice.
+    <Tabs items={["npm", "yarn", "pnpm"]}>
+    <Tab>
+    ```console copy 
+    npm install @twapi/auth 
+    ```
+    </Tab>
+    <Tab>
+    ```console copy 
+    yarn add @twapi/auth 
+    ```
+    </Tab>
+    <Tab>
+    ```console copy 
+    pnpm install @twapi/auth 
+    ```
+    </Tab>
+    </Tabs>
+
+    ### Create credentials
+    Create an instance of `credentials` class with your credentials
+
+    ```ts copy filename="src/index.ts"
+    const credentials = new Credentials(
+        process.env.SAMPLE_OAUTH_TOKEN,
+        process.env.CLIENT_ID,
+        process.env.CLIENT_SECRET
+    );
+    ```
+
+    ### Instantiate Auth Provider
+    Using your credentials instantiate an auth provider
+    ```ts copy filename="src/index.ts"
+    const authProvider = new AuthProvider(credentials);
+
+    const token = await authProvider.getAppAccessToken();
+    console.log(`Your app access token is ${token}`)
+
+    const userName = await authProvider.getUserName();
+    console.log(`Your twitch username is ${userName}`)
+    ```
+
+    <Callout type="warning">
+        The `getAppAccessToken()` will return **undefined** if failed to get an app access token for the given credentials
+    </Callout>
+
+</Steps>

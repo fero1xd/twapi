@@ -1,7 +1,8 @@
 {
   "index": "Introduction",
+  "auth": "Authentication",
   "eventsub": "Event Sub",
-  "helix": "Helix API",
   "pubsub": "Pub Sub",
+  "helix": "Helix API",
   "chat": "Chat"
 }

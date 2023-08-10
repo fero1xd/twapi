@@ -147,7 +147,10 @@ export class AuthProvider implements IAuthProvider {
     // First time calling this method
     if (!appAccessToken || !expiresIn) {
       const newAppToken = await this._fetchAppAccessToken();
-      if (newAppToken) return newAppToken;
+      if (newAppToken) {
+        this._log.info("Got app access token for this firt time.");
+        return newAppToken;
+      }
     }
 
     // App access token expired !
@@ -176,8 +179,6 @@ export class AuthProvider implements IAuthProvider {
   private async _fetchAppAccessToken() {
     const newAppToken = await fetchAppAccessToken(this._credentials, this._log);
     if (newAppToken) {
-      this._log.info("Got app access token for this firt time.");
-
       this._credentials.setAppAccessToken(newAppToken.access_token);
 
       this._credentials.setAppAccessTokenExpiration(

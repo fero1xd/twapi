@@ -15,6 +15,7 @@ Still work in progress 👷🏻
 
 | Package                              | Description                   |
 | :----------------------------------- | :---------------------------- |
+| [@twapi/auth](packages/auth)         | Shared package used for authentication |
 | [@twapi/eventsub](packages/eventsub) | Interact with twitch eventsub |
 | [@twapi/api](packages/api)           | Call the twitch helix api     |
 | [@twapi/pubsub](packages/pubsub)     | Interact with twitch pubsub   |
