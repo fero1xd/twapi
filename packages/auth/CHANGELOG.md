@@ -1,5 +1,11 @@
 # @twapi/auth
 
+## 0.2.1
+
+### Patch Changes
+
+- d2b042d: fix(auth): fixed logging condition
+
 ## 0.2.0
 
 ### Minor Changes
