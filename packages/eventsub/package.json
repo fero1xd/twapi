@@ -1,6 +1,6 @@
 {
   "name": "@twapi/eventsub",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "Interact with twitch EventSub system",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
