@@ -1,5 +1,14 @@
 # @twapi/eventsub
 
+## 1.0.3
+
+### Patch Changes
+
+- ebe98f8: @twapi/logger: `Logger`` type refactor
+- Updated dependencies [ebe98f8]
+  - @twapi/logger@1.0.0
+  - @twapi/auth@0.2.2
+
 ## 1.0.2
 
 ### Patch Changes
