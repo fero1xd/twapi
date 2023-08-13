@@ -1,5 +1,12 @@
 # @twapi/eventsub-example
 
+## 1.0.10
+
+### Patch Changes
+
+- @twapi/eventsub@1.0.4
+- @twapi/auth@0.2.2
+
 ## 1.0.9
 
 ### Patch Changes
