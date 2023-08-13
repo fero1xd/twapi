@@ -1,5 +1,13 @@
 # @twapi/pubsub-example
 
+## 1.0.7
+
+### Patch Changes
+
+- Updated dependencies [89d9cd9]
+  - @twapi/auth@0.2.3
+  - @twapi/pubsub@1.0.2
+
 ## 1.0.6
 
 ### Patch Changes

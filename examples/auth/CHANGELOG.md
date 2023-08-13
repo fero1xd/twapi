@@ -1,5 +1,12 @@
 # @twapi/auth-example
 
+## 0.0.5
+
+### Patch Changes
+
+- Updated dependencies [89d9cd9]
+  - @twapi/auth@0.2.3
+
 ## 0.0.4
 
 ### Patch Changes

@@ -1,5 +1,12 @@
 # @twapi/eventsub
 
+## 1.0.5
+
+### Patch Changes
+
+- Updated dependencies [89d9cd9]
+  - @twapi/auth@0.2.3
+
 ## 1.0.4
 
 ### Patch Changes

@@ -1,5 +1,11 @@
 # @twapi/auth
 
+## 0.2.3
+
+### Patch Changes
+
+- 89d9cd9: refactor(auth): fix typo
+
 ## 0.2.2
 
 ### Patch Changes
