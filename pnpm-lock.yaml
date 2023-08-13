@@ -151,10 +151,10 @@ importers:
   packages/api:
     dependencies:
       '@twapi/auth':
-        specifier: 0.2.3
-        version: 0.2.3
+        specifier: 0.2.4
+        version: link:../auth
       '@twapi/logger':
-        specifier: 1.0.1
+        specifier: 1.0.2
         version: link:../logger
       '@twapi/tsconfig':
         specifier: 0.1.0
@@ -179,7 +179,7 @@ importers:
   packages/auth:
     dependencies:
       '@twapi/logger':
-        specifier: 1.0.1
+        specifier: 1.0.2
         version: link:../logger
       '@twapi/tsconfig':
         specifier: 0.1.0
@@ -215,13 +215,13 @@ importers:
   packages/eventsub:
     dependencies:
       '@twapi/auth':
-        specifier: 0.2.3
-        version: 0.2.3
+        specifier: 0.2.4
+        version: link:../auth
       '@twapi/eslint-config-custom':
         specifier: 0.1.0
         version: link:../config/eslint-config-custom
       '@twapi/logger':
-        specifier: 1.0.1
+        specifier: 1.0.2
         version: link:../logger
       '@twapi/tsconfig':
         specifier: 0.1.0
@@ -280,10 +280,10 @@ importers:
   packages/pubsub:
     dependencies:
       '@twapi/auth':
-        specifier: 0.2.3
-        version: 0.2.3
+        specifier: 0.2.4
+        version: link:../auth
       '@twapi/logger':
-        specifier: 1.0.1
+        specifier: 1.0.2
         version: link:../logger
       '@twapi/tsconfig':
         specifier: 0.1.0
@@ -1371,10 +1371,6 @@ packages:
       - '@types/node'
       - typescript
     dev: true
-
-  /@twapi/auth@0.2.3:
-    resolution: {integrity: sha512-1bn5/xOUVt53wDpbIL8fNYvnRZGV9EY2eHBFSAv7nv8Rs7t70FPEUwBwnyFwqZZLzwBFt8KkG64ORPOexa9GWA==}
-    dev: false
 
   /@types/acorn@4.0.6:
     resolution: {integrity: sha512-veQTnWP+1D/xbxVrPC3zHnCZRjSrKfhbMUlEA43iMZLu7EsnTtkJklIuwrCPbOi8YkvDQAiW05VQQFvvz9oieQ==}
