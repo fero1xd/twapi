@@ -11,14 +11,12 @@ const credentials = new Credentials(
 
 const pubusb = new PubSub(new AuthProvider(credentials));
 
-const listener = pubusb.register("chatModeratorActions", {
-  channel_id: 642902413,
+const listener = pubusb.register("whispers", {
   user_id: 642902413,
 });
 
 listener.onTrigger((d) => {
-  console.log(d.data);
-  listener.unsubscribe();
+  console.log(d);
 });
 
 listener.onRevocation(() => {

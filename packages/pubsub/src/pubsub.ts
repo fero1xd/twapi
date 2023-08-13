@@ -139,6 +139,9 @@ export class PubSub {
 
         const payload = JSON.parse(message.data?.message);
 
+        if (payload?.type === "thread") {
+          return;
+        }
         relatedListeners.forEach((l) => l.triggerHandler(payload));
     }
   }
