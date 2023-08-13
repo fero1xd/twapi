@@ -20,7 +20,7 @@ export const createGetEmoteSetsQuery = (emoteSetId: string | string[]) => {
 export const createSendShoutoutQuery = (
   from: string,
   to: string,
-  modId: string
+  modId?: string
 ) => {
   return {
     from_broadcaster_id: from,
@@ -30,7 +30,7 @@ export const createSendShoutoutQuery = (
 };
 
 export const createUpdateChatColorQuery = (
-  userId: string,
+  userId: string | undefined,
   color: ChatColor
 ) => {
   return {

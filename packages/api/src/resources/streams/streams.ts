@@ -1,19 +1,15 @@
 export const createStreamMarkerQuery = (
-  userId: string,
+  userId?: string,
   description?: string
 ) => {
-  return description
-    ? {
-        user_id: userId,
-      }
-    : {
-        user_id: userId,
-        description,
-      };
+  return {
+    user_id: userId,
+    description,
+  };
 };
 
 export const createGetStreamMarkersQuery = (
-  userId: string,
+  userId: string | undefined,
   videoId: string
 ) => {
   return {

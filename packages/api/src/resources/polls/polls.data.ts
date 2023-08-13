@@ -31,7 +31,6 @@ export interface Poll extends BroadcasterInfo {
 }
 
 export interface CreatePollBody {
-  broadcaster_id: string;
   title: string;
   choices: { title: string }[];
   duration: string;
@@ -40,7 +39,6 @@ export interface CreatePollBody {
 }
 
 export interface EndPollBody {
-  broadcaster_id: string;
   id: string;
   status: "TERMINATED" | "ARCHIVED";
 }

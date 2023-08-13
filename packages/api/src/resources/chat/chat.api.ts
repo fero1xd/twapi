@@ -30,13 +30,11 @@ export interface ChatApiEndpoints {
    * Gets the list of users that are connected to the broadcaster’s chat session.
    *
    * @param broadcasterId The ID of the broadcaster whose list of chatters you want to get.
-   * @param moderatorId The ID of the broadcaster or one of the broadcaster’s moderators. This ID must match the user ID in the user access token.
    *
    * @returns The list of users that are connected to the broadcaster’s chat room. The list is empty if no users are connected to the chat room.
    */
   getChatters(
-    broadcasterId: string,
-    moderatorId: string
+    broadcasterId: string
   ): Promise<HelixPaginatedResponseIterator<UserInfo>>;
 
   /**
@@ -84,27 +82,21 @@ export interface ChatApiEndpoints {
    * Gets the broadcaster’s chat settings.
    *
    * @param broadcasterId The ID of the broadcaster whose chat settings you want to get.
-   * @param moderatorId The ID of the broadcaster or one of the broadcaster’s moderators. This field is required only if you want to include the non_moderator_chat_delay and non_moderator_chat_delay_duration settings in the response.
    *
    * @returns The chat settings
    */
-  getChatSettings(
-    broadcasterId: string,
-    moderatorId?: string
-  ): Promise<ChatSettings>;
+  getChatSettings(broadcasterId: string): Promise<ChatSettings>;
 
   /**
    * Updates the broadcaster’s chat settings.
    *
    * @param broadcasterId The ID of the broadcaster whose chat settings you want to update.
    * @param body Updated chat settings
-   * @param moderatorId The ID of a user that has permission to moderate the broadcaster’s chat room, or the broadcaster’s ID if they’re making the update. This ID must match the user ID in the user access token.
    *
    * @returns All the settings
    */
   updateChatSettings(
     broadcasterId: string,
-    moderatorId: string,
     body: UpdateChatSettingsBody
   ): Promise<ChatSettings>;
 
@@ -112,23 +104,21 @@ export interface ChatApiEndpoints {
    * Sends an announcement to the broadcaster’s chat room.
    *
    * @param broadcasterId The ID of the broadcaster that owns the chat room to send the announcement to.
-   * @param moderatorId The ID of a user who has permission to moderate the broadcaster’s chat room, or the broadcaster’s ID if they’re sending the announcement. This ID must match the user ID in the user access token.
    * @param body The message and color fields
    */
   sendChatAnnouncement(
     broadcasterId: string,
-    moderatorId: string,
     body: ChatAnnouncementBody
   ): Promise<void>;
 
   /**
    * Sends a Shoutout to the specified broadcaster.
    * **Rate Limits** The broadcaster may send a Shoutout once every 2 minutes. They may send the same broadcaster a Shoutout once every 60 minutes.
+   *
    * @param from The ID of the broadcaster that’s sending the Shoutout.
    * @param to The ID of the broadcaster that’s receiving the Shoutout.
-   * @param moderatorId The ID of the broadcaster or a user that is one of the broadcaster’s moderators. This ID must match the user ID in the access token.
    */
-  sendShoutout(from: string, to: string, moderatorId: string): Promise<void>;
+  sendShoutout(from: string, to: string): Promise<void>;
 
   /**
    * Gets the color used for the user’s name in chat.
@@ -147,16 +137,17 @@ export interface ChatApiEndpoints {
   /**
    * Updates the color used for the user’s name in chat.
    *
-   * @param userId The ID of the user whose chat color you want to update. This ID must match the user ID in the access token.
    * @param color The color to use for the user’s name in chat.
    */
-  updateUserChatColor(userId: string, color: ChatColor): Promise<void>;
+  updateUserChatColor(color: ChatColor): Promise<void>;
 }
 
 export class ChatApi implements ChatApiEndpoints {
   constructor(private _client: ApiClient) {}
 
-  async getChatters(broadcasterId: string, moderatorId: string) {
+  async getChatters(broadcasterId: string) {
+    const moderatorId = await this._client.getUserId();
+
     const config: RequestConfig = {
       url: "chat/chatters",
       method: "GET",
@@ -229,7 +220,9 @@ export class ChatApi implements ChatApiEndpoints {
     return res.data;
   }
 
-  async getChatSettings(broadcasterId: string, moderatorId?: string) {
+  async getChatSettings(broadcasterId: string) {
+    const moderatorId = await this._client.getUserId();
+
     const res = await this._client.enqueueCall<HelixResponse<ChatSettings>>({
       url: "chat/settings",
       method: "GET",
@@ -242,9 +235,10 @@ export class ChatApi implements ChatApiEndpoints {
 
   async updateChatSettings(
     broadcasterId: string,
-    moderatorId: string,
     body: UpdateChatSettingsBody
   ): Promise<ChatSettings> {
+    const moderatorId = await this._client.getUserId();
+
     const res = await this._client.enqueueCall<HelixResponse<ChatSettings>>({
       url: "chat/settings",
       method: "PATCH",
@@ -258,9 +252,10 @@ export class ChatApi implements ChatApiEndpoints {
 
   async sendChatAnnouncement(
     broadcasterId: string,
-    moderatorId: string,
     body: ChatAnnouncementBody
   ) {
+    const moderatorId = await this._client.getUserId();
+
     await this._client.enqueueCall({
       url: "chat/announcements",
       method: "POST",
@@ -270,7 +265,9 @@ export class ChatApi implements ChatApiEndpoints {
     });
   }
 
-  async sendShoutout(from: string, to: string, moderatorId: string) {
+  async sendShoutout(from: string, to: string) {
+    const moderatorId = await this._client.getUserId();
+
     await this._client.enqueueCall({
       url: "chat/shoutouts",
       method: "POST",
@@ -301,7 +298,9 @@ export class ChatApi implements ChatApiEndpoints {
     return res.data;
   }
 
-  async updateUserChatColor(userId: string, color: ChatColor) {
+  async updateUserChatColor(color: ChatColor) {
+    const userId = await this._client.getUserId();
+
     await this._client.enqueueCall({
       url: "chat/color",
       method: "PUT",

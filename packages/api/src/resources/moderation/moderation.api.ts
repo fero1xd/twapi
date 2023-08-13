@@ -6,7 +6,7 @@ import {
 } from "../../internal/interfaces";
 import { HelixPaginatedResponseIterator } from "../HelixPaginatedResponse";
 import { createBroadModQuery } from "../chat/chat";
-import { createBroadcasterQuery } from "../common.data";
+import { createBroadcasterQuery, createModeratorQuery } from "../common.data";
 import {
   createAddModeratorQuery,
   createAddVipQuery,
@@ -15,6 +15,7 @@ import {
   createGetVipsQuery,
   createRemoveModeratorQuery,
   createRemoveVipQuery,
+  createUnbanQuery,
 } from "./moderation";
 import {
   AutomodSettings,
@@ -39,13 +40,11 @@ export interface ModerationApiEndpoints {
   /**
    * Checks whether AutoMod would flag the specified message for review.
    *
-   * @param broadcasterId The ID of the broadcaster whose AutoMod settings and list of blocked terms are used to check the message. This ID must match the user ID in the access token.
    * @param body The list of messages to check. The list must contain at least one message and may contain up to a maximum of 100 messages.
    *
    * @returns The list of messages and whether Twitch would approve them for chat.
    */
   checkAutomodStatus(
-    broadcasterId: string,
     body: CheckAutoModStatusBody | CheckAutoModStatusBody[]
   ): Promise<MessageApproval[]>;
 
@@ -60,38 +59,32 @@ export interface ModerationApiEndpoints {
    * Gets the broadcaster’s AutoMod settings. The settings are used to automatically block inappropriate or harassing messages from appearing in the broadcaster’s chat room.
    *
    * @param broadcasterId The ID of the broadcaster whose AutoMod settings you want to get.
-   * @param moderatorId The ID of the broadcaster or a user that has permission to moderate the broadcaster’s chat room. This ID must match the user ID in the user access token.
    *
    * @returns Object that contains all the AutoMod settings.
    */
-  getAutomodSettings(
-    broadcasterId: string,
-    moderatorId: string
-  ): Promise<AutomodSettings>;
+  getAutomodSettings(broadcasterId: string): Promise<AutomodSettings>;
 
   /**
    * Updates the broadcaster’s AutoMod settings. The settings are used to automatically block inappropriate or harassing messages from appearing in the broadcaster’s chat room.
    *
-   * @param query The broadcaster's and moderator's id
+   * @param broadcasterId The ID of the broadcaster whose AutoMod settings you want to update.
    * @param body Settings Diff
    *
    * @returns Object that contains all the AutoMod settings.
    */
   updateAutomodSettings(
-    query: BroadcasterModeratorQuery,
+    broadcasterId: string,
     body: Partial<ModerationSettings>
   ): Promise<AutomodSettings>;
 
   /**
    * Gets all users that the broadcaster banned or put in a timeout.
    *
-   * @param broadcasterId The ID of the broadcaster whose list of banned users you want to get. This ID must match the user ID in the access token.
    * @param userIds Filter users with this filter
    *
    * @returns A paginated list of banned users
    */
   getBannedUsers(
-    broadcasterId: string,
     userIds?: string[]
   ): Promise<HelixPaginatedResponseIterator<BannedUser>>;
 
@@ -99,48 +92,43 @@ export interface ModerationApiEndpoints {
    * Bans a user from participating in the specified broadcaster’s chat room or puts them in a timeout.
    * If the user is currently in a timeout, you can call this endpoint to change the duration of the timeout or ban them altogether. If the user is currently banned, you cannot call this method to put them in a timeout instead.
    *
-   * @param query The broadcaster's and moderator's id
+   * @param broadcasterId The ID of the broadcaster whose chat room the user is being banned from.
    * @param body Identifies the user and type of ban
    *
    * @returns Contains the user you successfully banned or put in a timeout.
    */
-  banUser(
-    query: BroadcasterModeratorQuery,
-    body: BanUserBody
-  ): Promise<BanUserResponse>;
+  banUser(broadcasterId: string, body: BanUserBody): Promise<BanUserResponse>;
 
   /**
    * Removes the ban or timeout that was placed on the specified user.
    *
-   * @param query Unban request data
+   * @param broadcasterId The ID of the broadcaster whose chat room the user is banned from chatting in.
+   * @param userId The ID of the user to remove the ban or timeout from.
    */
-  unbanUser(query: UnbanUserQuery): Promise<void>;
+  unbanUser(broadcasterId: string, userId: string): Promise<void>;
 
   /**
    * Gets the broadcaster’s list of non-private, blocked words or phrases. These are the terms that the broadcaster or moderator added manually or that were denied by AutoMod.
    *
-   * @param query The broadcaster's and moderator's id
+   * @param broadcasterId The ID of the broadcaster whose blocked terms you’re getting.
    *
    * @returns A paginated list of blocked terms
    */
   getBlockedTerms(
-    query: BroadcasterModeratorQuery
+    broadcasterId: string
   ): Promise<HelixPaginatedResponseIterator<BlockedTerm>>;
 
   /**
    * Adds a word or phrase to the broadcaster’s list of blocked terms. These are the terms that the broadcaster doesn’t want used in their chat room.
    * 
-   * @param query The broadcaster's and moderator's id
+   * @param broadcasterId The ID of the broadcaster that owns the list of blocked terms.
    * @param text The word or phrase to block from being used in the broadcaster’s chat room. The term must contain a minimum of 2 characters and may contain up to a maximum of 500 characters.
         Terms may include a wildcard character (*). The wildcard character must appear at the beginning or end of a word or set of characters. For example, *foo or foo*.
         If the blocked term already exists, the response contains the existing blocked term.
 
     @returns Blocked term that the broadcaster added.
    */
-  addBlockedTerm(
-    query: BroadcasterModeratorQuery,
-    text: string
-  ): Promise<BlockedTerm>;
+  addBlockedTerm(broadcasterId: string, text: string): Promise<BlockedTerm>;
 
   /**
    * Removes the word or phrase from the broadcaster’s list of blocked terms.
@@ -159,13 +147,11 @@ export interface ModerationApiEndpoints {
   /**
    * Gets all users allowed to moderate the broadcaster’s chat room.
    *
-   * @param broadcasterId The ID of the broadcaster whose list of moderators you want to get. This ID must match the user ID in the access token.
    * @param userIds Filter users with this filter
    *
    * @returns A paginated list of channel moderators
    */
   getModerators(
-    broadcasterId: string,
     userIds?: string[]
   ): Promise<HelixPaginatedResponseIterator<Moderator>>;
 
@@ -173,85 +159,76 @@ export interface ModerationApiEndpoints {
    * Adds a moderator to the broadcaster’s chat room.
      Rate Limits: The broadcaster may add a maximum of 10 moderators within a 10-second window.
 
-   * @param broadcasterId The ID of the broadcaster whose list of moderators you want to get. This ID must match the user ID in the access token.
    * @param userId The ID of the user to add as a moderator in the broadcaster’s chat room.
    */
-  addModerator(broadcasterId: string, userId: string): Promise<void>;
+  addModerator(userId: string): Promise<void>;
 
   /**
    * Removes a moderator from the broadcaster’s chat room.
      Rate Limits: The broadcaster may remove a maximum of 10 moderators within a 10-second window.
 
-   * @param broadcasterId The ID of the broadcaster whose list of moderators you want to get. This ID must match the user ID in the access token.
    * @param userId The ID of the user to remove as a moderator from the broadcaster’s chat room.
    */
-  removeChannelModerator(broadcasterId: string, userId: string): Promise<void>;
+  removeChannelModerator(userId: string): Promise<void>;
 
   /**
    * Gets a list of the broadcaster’s VIPs.
    *
-   * @param broadcasterId The ID of the broadcaster whose list of VIPs you want to get. This ID must match the user ID in the access token.
    * @param userIds Filters the list for specific VIPs
    *
    * @returns A paginated list of channel vips
    */
-  getVips(
-    broadcasterId: string,
-    userIds?: string[]
-  ): Promise<HelixPaginatedResponseIterator<Vip>>;
+  getVips(userIds?: string[]): Promise<HelixPaginatedResponseIterator<Vip>>;
 
   /**
    * Adds the specified user as a VIP in the broadcaster’s channel.
      Rate Limits: The broadcaster may add a maximum of 10 VIPs within a 10-second window.
 
-   * @param broadcasterId The ID of the broadcaster that’s adding the user as a VIP. This ID must match the user ID in the access token.
    * @param userId The ID of the user to give VIP status to.
    */
-  addChannelVip(broadcasterId: string, userId: string): Promise<void>;
+  addChannelVip(userId: string): Promise<void>;
 
   /**
    * Removes the specified user as a VIP in the broadcaster’s channel.
      If the broadcaster is removing the user’s VIP status, the ID in the broadcaster_id query parameter must match the user ID in the access token; otherwise, if the user is removing their VIP status themselves, the ID in the user_id query parameter must match the user ID in the access token.
 
-   * @param broadcasterId The ID of the broadcaster who owns the channel where the user has VIP status.
    * @param userId The ID of the user to remove VIP status from.
    */
-  removeChannelVip(broadcasterId: string, userId: string): Promise<void>;
+  removeChannelVip(userId: string): Promise<void>;
 
   /**
    * Activates or deactivates the broadcaster’s Shield Mode.
      Twitch’s Shield Mode feature is like a panic button that broadcasters can push to protect themselves from chat abuse coming from one or more accounts.
      When activated, Shield Mode applies the overrides that the broadcaster configured in the Twitch UX. If the broadcaster hasn’t configured Shield Mode, it applies default overrides.
 
-   * @param query The broadcaster's and moderator's id
+   * @param broadcasterId The ID of the broadcaster whose Shield Mode you want to activate or deactivate.
    * @param isActive A Boolean value that determines whether to activate Shield Mode. Set to true to activate Shield Mode; otherwise, false to deactivate Shield Mode.
    * 
    * @returns Channel's updated shield mode status
    */
   updateShieldModeStatus(
-    query: BroadcasterModeratorQuery,
+    broadcasterId: string,
     isActive: boolean
   ): Promise<ShieldModeStatus>;
 
   /**
    * Gets the broadcaster’s Shield Mode activation status.
    *
-   * @param query The broadcaster's and moderator's id
+   * @param broadcasterId The ID of the broadcaster whose Shield Mode activation status you want to get.
    *
    * @returns The broadcaster’s Shield Mode status.
    */
-  getShieldModeStatus(
-    query: BroadcasterModeratorQuery
-  ): Promise<ShieldModeStatus>;
+  getShieldModeStatus(broadcasterId: string): Promise<ShieldModeStatus>;
 }
 
 export class ModerationApi implements ModerationApiEndpoints {
   constructor(private _client: ApiClient) {}
 
   async checkAutomodStatus(
-    broadcasterId: string,
     body: CheckAutoModStatusBody | CheckAutoModStatusBody[]
   ) {
+    const broadcasterId = await this._client.getUserId();
+
     const res = await this._client.enqueueCall<HelixResponse<MessageApproval>>({
       url: "moderation/enforcements/status",
       method: "POST",
@@ -264,15 +241,19 @@ export class ModerationApi implements ModerationApiEndpoints {
   }
 
   async manageHeldAutomodMessage(body: ManageAutomodMessageBody) {
+    const userId = await this._client.getUserId();
+
     await this._client.enqueueCall({
       url: "moderation/automod/message",
       method: "POST",
-      body,
+      body: { ...body, user_id: userId },
       oauth: true,
     });
   }
 
-  async getAutomodSettings(broadcasterId: string, moderatorId: string) {
+  async getAutomodSettings(broadcasterId: string) {
+    const moderatorId = await this._client.getUserId();
+
     const res = await this._client.enqueueCall<HelixResponse<AutomodSettings>>({
       url: "moderation/automod/settings",
       oauth: true,
@@ -284,21 +265,25 @@ export class ModerationApi implements ModerationApiEndpoints {
   }
 
   async updateAutomodSettings(
-    query: BroadcasterModeratorQuery,
+    broadcasterId: string,
     body: Partial<ModerationSettings>
   ) {
+    const moderatorId = await this._client.getUserId();
+
     const res = await this._client.enqueueCall<HelixResponse<AutomodSettings>>({
       url: "moderation/automod/settings",
       method: "PUT",
       body,
-      query,
+      query: createBroadModQuery(broadcasterId, moderatorId),
       oauth: true,
     });
 
     return res.data[0];
   }
 
-  async getBannedUsers(broadcasterId: string, userIds?: string[]) {
+  async getBannedUsers(userIds?: string[]) {
+    const broadcasterId = await this._client.getUserId();
+
     const config: RequestConfig = {
       url: "moderation/banned",
       method: "GET",
@@ -313,33 +298,39 @@ export class ModerationApi implements ModerationApiEndpoints {
     return new HelixPaginatedResponseIterator(res, this._client, config);
   }
 
-  async banUser(query: BroadcasterModeratorQuery, body: BanUserBody) {
+  async banUser(broadcasterId: string, body: BanUserBody) {
+    const moderatorId = await this._client.getUserId();
+
     const res = await this._client.enqueueCall<HelixResponse<BanUserResponse>>({
       url: "moderation/bans",
       method: "POST",
       oauth: true,
-      query,
+      query: createBroadModQuery(broadcasterId, moderatorId),
       body: { data: body },
     });
 
     return res.data[0];
   }
 
-  async unbanUser(query: UnbanUserQuery) {
+  async unbanUser(broadcasterId: string, userId: string) {
+    const moderatorId = await this._client.getUserId();
+
     await this._client.enqueueCall({
       url: "moderation/bans",
       method: "DELETE",
-      query,
+      query: createUnbanQuery(broadcasterId, userId, moderatorId),
       oauth: true,
     });
   }
 
-  async getBlockedTerms(query: BroadcasterModeratorQuery) {
+  async getBlockedTerms(broadcasterId: string) {
+    const moderatorId = await this._client.getUserId();
+
     const config: RequestConfig = {
       url: "moderation/blocked_terms",
       method: "GET",
       oauth: true,
-      query,
+      query: createBroadModQuery(broadcasterId, moderatorId),
     };
 
     const res = await this._client.enqueueCall<
@@ -349,12 +340,14 @@ export class ModerationApi implements ModerationApiEndpoints {
     return new HelixPaginatedResponseIterator(res, this._client, config);
   }
 
-  async addBlockedTerm(query: BroadcasterModeratorQuery, text: string) {
+  async addBlockedTerm(broadcasterId: string, text: string) {
+    const moderatorId = await this._client.getUserId();
+
     const res = await this._client.enqueueCall<HelixResponse<BlockedTerm>>({
       url: "moderation/blocked_terms",
       method: "POST",
       oauth: true,
-      query,
+      query: createBroadModQuery(broadcasterId, moderatorId),
       body: { text },
     });
 
@@ -362,24 +355,30 @@ export class ModerationApi implements ModerationApiEndpoints {
   }
 
   async removeBlockedTerm(query: RemoveBlockedTermQuery) {
+    const moderatorId = await this._client.getUserId();
+
     await this._client.enqueueCall({
       url: "moderation/blocked_terms",
       method: "DELETE",
       oauth: true,
-      query,
+      query: { ...query, ...createModeratorQuery(moderatorId) },
     });
   }
 
   async deleteChatMessage(query: DeleteChatMessageQuery) {
+    const moderatorId = await this._client.getUserId();
+
     await this._client.enqueueCall({
       url: "moderation/chat",
       oauth: true,
-      query,
+      query: { ...query, ...createModeratorQuery(moderatorId) },
       method: "DELETE",
     });
   }
 
-  async getModerators(broadcasterId: string, userIds?: string[]) {
+  async getModerators(userIds?: string[]) {
+    const broadcasterId = await this._client.getUserId();
+
     const config: RequestConfig = {
       url: "moderation/moderators",
       method: "GET",
@@ -394,7 +393,9 @@ export class ModerationApi implements ModerationApiEndpoints {
     return new HelixPaginatedResponseIterator(res, this._client, config);
   }
 
-  async addModerator(broadcasterId: string, userId: string) {
+  async addModerator(userId: string) {
+    const broadcasterId = await this._client.getUserId();
+
     await this._client.enqueueCall({
       url: "moderation/moderators",
       oauth: true,
@@ -403,7 +404,9 @@ export class ModerationApi implements ModerationApiEndpoints {
     });
   }
 
-  async removeChannelModerator(broadcasterId: string, userId: string) {
+  async removeChannelModerator(userId: string) {
+    const broadcasterId = await this._client.getUserId();
+
     await this._client.enqueueCall({
       url: "moderation/moderators",
       oauth: true,
@@ -412,7 +415,9 @@ export class ModerationApi implements ModerationApiEndpoints {
     });
   }
 
-  async getVips(broadcasterId: string, userIds?: string[]) {
+  async getVips(userIds?: string[]) {
+    const broadcasterId = await this._client.getUserId();
+
     const config: RequestConfig = {
       url: "channels/vips",
       method: "GET",
@@ -427,7 +432,9 @@ export class ModerationApi implements ModerationApiEndpoints {
     return new HelixPaginatedResponseIterator(res, this._client, config);
   }
 
-  async addChannelVip(broadcasterId: string, userId: string) {
+  async addChannelVip(userId: string) {
+    const broadcasterId = await this._client.getUserId();
+
     await this._client.enqueueCall({
       url: "channels/vips",
       oauth: true,
@@ -436,7 +443,9 @@ export class ModerationApi implements ModerationApiEndpoints {
     });
   }
 
-  async removeChannelVip(broadcasterId: string, userId: string) {
+  async removeChannelVip(userId: string) {
+    const broadcasterId = await this._client.getUserId();
+
     await this._client.enqueueCall({
       url: "channels/vips",
       oauth: true,
@@ -445,15 +454,14 @@ export class ModerationApi implements ModerationApiEndpoints {
     });
   }
 
-  async updateShieldModeStatus(
-    query: BroadcasterModeratorQuery,
-    isActive: boolean
-  ) {
+  async updateShieldModeStatus(broadcasterId: string, isActive: boolean) {
+    const moderatorId = await this._client.getUserId();
+
     const res = await this._client.enqueueCall<HelixResponse<ShieldModeStatus>>(
       {
         url: "moderation/shield_mode",
         oauth: true,
-        query,
+        query: createBroadModQuery(broadcasterId, moderatorId),
         method: "PUT",
         body: { is_active: isActive },
       }
@@ -462,13 +470,15 @@ export class ModerationApi implements ModerationApiEndpoints {
     return res.data[0];
   }
 
-  async getShieldModeStatus(query: BroadcasterModeratorQuery) {
+  async getShieldModeStatus(broadcasterId: string) {
+    const moderatorId = await this._client.getUserId();
+
     const res = await this._client.enqueueCall<HelixResponse<ShieldModeStatus>>(
       {
         url: "moderation/shield_mode",
         oauth: true,
         method: "GET",
-        query,
+        query: createBroadModQuery(broadcasterId, moderatorId),
       }
     );
 

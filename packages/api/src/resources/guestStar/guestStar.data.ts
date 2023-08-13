@@ -45,7 +45,6 @@ export interface Invite {
 
 export interface GetGuestStarInvitesQuery {
   broadcaster_id: string;
-  moderator_id: string;
   session_id: string;
 }
 

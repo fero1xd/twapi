@@ -26,20 +26,13 @@ export interface ChannelPrediction extends BroadcasterInfo {
   locked_at: string | null;
 }
 
-export interface GetPredictionsQuery {
-  broadcaster_id: string;
-  id?: string | string[];
-}
-
 export interface CreatePredictionBody {
-  broadcaster_id: string;
   title: string;
   outcomes: { title: string }[];
   prediction_window: number;
 }
 
 export interface EndPredictionBody {
-  broadcaster_id: string;
   id: string;
   status: "RESOLVED" | "CANCELLED" | "LOCKED";
   winning_outcome_id?: string;

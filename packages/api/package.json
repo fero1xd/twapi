@@ -1,11 +1,11 @@
 {
   "name": "@twapi/api",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Interact with twitch's hellix Api",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
-  "private": true,
+  "private": false,
   "files": [
     "dist"
   ],

@@ -5,6 +5,7 @@ import {
   RequestConfig,
 } from "../../internal/interfaces";
 import { HelixPaginatedResponseIterator } from "../HelixPaginatedResponse";
+import { createBroadcasterQuery } from "../common.data";
 import { createGetPollsQuery } from "./polls";
 import { CreatePollBody, EndPollBody, Poll } from "./polls.data";
 
@@ -13,15 +14,11 @@ export interface PollsApiEndpoints {
      * Gets a list of polls that the broadcaster created.
        Polls are available for 90 days after they’re created.
 
-     * @param broadcasterId The ID of the broadcaster that created the polls. This ID must match the user ID in the user access token.
      * @param ids IDs that identify the polls to return
      * 
      * @returns A paginated list of polls
   */
-  getPolls(
-    broadcasterId: string,
-    ids?: string[]
-  ): Promise<HelixPaginatedResponseIterator<Poll>>;
+  getPolls(ids?: string[]): Promise<HelixPaginatedResponseIterator<Poll>>;
 
   /**
    * Creates a poll that viewers in the broadcaster’s channel can vote on.
@@ -45,7 +42,9 @@ export interface PollsApiEndpoints {
 export class PollsApi implements PollsApiEndpoints {
   constructor(private _client: ApiClient) {}
 
-  async getPolls(broadcasterId: string, ids?: string[]) {
+  async getPolls(ids?: string[]) {
+    const broadcasterId = await this._client.getUserId();
+
     const config: RequestConfig = {
       url: "polls",
       method: "GET",
@@ -61,22 +60,26 @@ export class PollsApi implements PollsApiEndpoints {
   }
 
   async createPoll(body: CreatePollBody) {
+    const broadcasterId = await this._client.getUserId();
+
     const res = await this._client.enqueueCall<HelixResponse<Poll>>({
       url: "polls",
       method: "POST",
       oauth: true,
-      body,
+      body: { ...body, ...createBroadcasterQuery(broadcasterId) },
     });
 
     return res.data[0];
   }
 
   async endPoll(body: EndPollBody) {
+    const broadcasterId = await this._client.getUserId();
+
     const res = await this._client.enqueueCall<HelixResponse<Poll>>({
       url: "polls",
       method: "PATCH",
       oauth: true,
-      body,
+      body: { ...body, ...createBroadcasterQuery(broadcasterId) },
     });
 
     return res.data[0];

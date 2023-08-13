@@ -7,22 +7,22 @@ export interface GoalsApiEndpoints {
   /**
    * Gets the broadcaster’s list of active goals. Use this endpoint to get the current progress of each goal.
    *
-   * @param broadcasterId The ID of the broadcaster that created the goals. This ID must match the user ID in the user access token.
-   *
    * @retuns A paginated list of goals
    */
-  getCreatorGoals(broadcasterId: string): Promise<Goal[]>;
+  getCreatorGoals(): Promise<Goal[]>;
 }
 
 export class GoalsApi implements GoalsApiEndpoints {
   constructor(private _client: ApiClient) {}
 
-  async getCreatorGoals(broadcasterId: string) {
+  async getCreatorGoals() {
+    const userId = await this._client.getUserId();
+
     const res = await this._client.enqueueCall<HelixResponse<Goal>>({
       url: "goals",
       method: "GET",
       oauth: true,
-      query: createBroadcasterQuery(broadcasterId),
+      query: createBroadcasterQuery(userId),
     });
 
     return res.data;

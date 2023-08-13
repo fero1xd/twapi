@@ -1,5 +1,5 @@
 export const createDeleteUpdateRewardQuery = (
-  broadcasterId: string,
+  broadcasterId: string | undefined,
   rewardId: string
 ) => {
   return {
@@ -9,7 +9,7 @@ export const createDeleteUpdateRewardQuery = (
 };
 
 export const createGetRewardQuery = (
-  broadcasterId: string,
+  broadcasterId?: string,
   id?: string | string[],
   onlyManageableRewards?: boolean
 ) => {

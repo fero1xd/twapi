@@ -1,5 +1,5 @@
 export const createGetBannedUsersQuery = (
-  broadcasterId: string,
+  broadcasterId?: string,
   userIds?: string | string[]
 ) => {
   return userIds
@@ -19,3 +19,15 @@ export const createRemoveModeratorQuery = createGetBannedUsersQuery;
 export const createGetVipsQuery = createGetBannedUsersQuery;
 export const createAddVipQuery = createGetBannedUsersQuery;
 export const createRemoveVipQuery = createGetBannedUsersQuery;
+
+export const createUnbanQuery = (
+  broadcasterId: string,
+  userId: string,
+  modId?: string
+) => {
+  return {
+    broadcaster_id: broadcasterId,
+    user_id: userId,
+    moderator_id: modId,
+  };
+};

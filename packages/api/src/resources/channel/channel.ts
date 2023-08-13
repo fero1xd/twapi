@@ -1,12 +1,11 @@
-export const createFollowedQuery = (userId: string, broadcasterId?: string) => {
-  return broadcasterId
-    ? {
-        user_id: userId,
-        broadcaster_id: broadcasterId,
-      }
-    : {
-        user_id: userId,
-      };
+export const createFollowedQuery = (
+  userId?: string,
+  broadcasterId?: string
+) => {
+  return {
+    user_id: userId,
+    broadcaster_id: broadcasterId,
+  };
 };
 export const createFollowersQuery = (
   broadcasterId: string,
@@ -23,7 +22,7 @@ export const createFollowersQuery = (
 };
 
 export const createCommercialQuery = (
-  broadcasterId: string,
+  broadcasterId: string | undefined,
   length: number
 ) => {
   return {

@@ -9,8 +9,14 @@ export interface HelixPaginatedResponseWithTotal<T>
   total: number;
 }
 
-export const createBroadcasterQuery = (id: string | string[]) => {
+export const createBroadcasterQuery = (id?: string | string[]) => {
   return {
     broadcaster_id: id,
+  };
+};
+
+export const createModeratorQuery = (id?: string) => {
+  return {
+    moderator_id: id,
   };
 };

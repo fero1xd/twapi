@@ -12,7 +12,10 @@ const main = async () => {
   const authProvider = new AuthProvider(credentials);
   const client = new ApiClient(authProvider);
 
-  const res = await client.channel.getChannelInformation("70225218");
+  const res = await client.moderation.checkAutomodStatus({
+    msg_id: "2424",
+    msg_text: "242424242424",
+  });
 
   console.log(res);
 };

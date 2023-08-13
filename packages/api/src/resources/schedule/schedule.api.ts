@@ -44,13 +44,11 @@ export interface ScheduleApiEndpoints {
   /**
    * Adds a single or recurring broadcast to the broadcaster’s streaming schedule.
    *
-   * @param broadcasterId The ID of the broadcaster that owns the schedule to add the broadcast segment to. This ID must match the user ID in the user access token.
    * @param body Data related to create a channel stream schedule segment
    *
    * @returns The broadcaster’s streaming scheduled.
    */
   createChannelStreamScheduleSegment(
-    broadcasterId: string,
     body: CreateChannelStreamScheduleSegmentBody
   ): Promise<HelixScheduleResponseData>;
 
@@ -58,14 +56,12 @@ export interface ScheduleApiEndpoints {
    * Updates a scheduled broadcast segment.
      For recurring segments, updating a segment’s title, category, duration, and timezone, changes all segments in the recurring schedule, not just the specified segment.
 
-   * @param broadcasterId The ID of the broadcaster who owns the broadcast segment to update. This ID must match the user ID in the user access token.
    * @param id The ID of the broadcast segment to update.
    * @param body Data to update
    * 
    * @returns The broadcaster’s streaming scheduled.
    */
   updateChannelStreamScheduleSegment(
-    broadcasterId: string,
     id: string,
     body: UpdateChannelStreamScheduleSegmentBody
   ): Promise<HelixScheduleResponseData>;
@@ -73,13 +69,9 @@ export interface ScheduleApiEndpoints {
   /**
    * Removes a broadcast segment from the broadcaster’s streaming schedule.
    *
-   * @param broadcasterId The ID of the broadcaster that owns the streaming schedule. This ID must match the user ID in the user access token.
    * @param id The ID of the broadcast segment to remove.
    */
-  deleteChannelStreamScheduleSegment(
-    broadcasterId: string,
-    id: string
-  ): Promise<void>;
+  deleteChannelStreamScheduleSegment(id: string): Promise<void>;
 }
 
 export class ScheduleApi implements ScheduleApiEndpoints {
@@ -107,18 +99,21 @@ export class ScheduleApi implements ScheduleApiEndpoints {
   }
 
   async updateChannelStreamSchedule(query: UpdateChannelStreamScheduleQuery) {
+    const broadcasterId = await this._client.getUserId();
+
     await this._client.enqueueCall({
       url: "schedule/settings",
       oauth: true,
-      query,
+      query: { ...query, ...createBroadcasterQuery(broadcasterId) },
       method: "PATCH",
     });
   }
 
   async createChannelStreamScheduleSegment(
-    broadcasterId: string,
     body: CreateChannelStreamScheduleSegmentBody
   ) {
+    const broadcasterId = await this._client.getUserId();
+
     const res = await this._client.enqueueCall<{
       data: HelixScheduleResponseData;
     }>({
@@ -133,10 +128,11 @@ export class ScheduleApi implements ScheduleApiEndpoints {
   }
 
   async updateChannelStreamScheduleSegment(
-    broadcasterId: string,
     id: string,
     body: UpdateChannelStreamScheduleSegmentBody
   ) {
+    const broadcasterId = await this._client.getUserId();
+
     const res = await this._client.enqueueCall<{
       data: HelixScheduleResponseData;
     }>({
@@ -150,7 +146,9 @@ export class ScheduleApi implements ScheduleApiEndpoints {
     return res.data;
   }
 
-  async deleteChannelStreamScheduleSegment(broadcasterId: string, id: string) {
+  async deleteChannelStreamScheduleSegment(id: string) {
+    const broadcasterId = await this._client.getUserId();
+
     await this._client.enqueueCall({
       url: "schedule/segment",
       method: "DELETE",

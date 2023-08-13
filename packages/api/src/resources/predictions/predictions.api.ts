@@ -5,11 +5,12 @@ import {
   RequestConfig,
 } from "../../internal/interfaces";
 import { HelixPaginatedResponseIterator } from "../HelixPaginatedResponse";
+import { createBroadcasterQuery } from "../common.data";
+import { createGetPredictionsQuery } from "./predictions";
 import {
   ChannelPrediction,
   CreatePredictionBody,
   EndPredictionBody,
-  GetPredictionsQuery,
 } from "./predictions.data";
 
 export interface PredictionsApiEndpoints {
@@ -21,7 +22,7 @@ export interface PredictionsApiEndpoints {
    * @returns A paginated list of channel points prediction
    */
   getPredictions(
-    query: GetPredictionsQuery
+    id?: string | string[]
   ): Promise<HelixPaginatedResponseIterator<ChannelPrediction>>;
 
   /**
@@ -47,12 +48,14 @@ export interface PredictionsApiEndpoints {
 export class PredictionsApi implements PredictionsApiEndpoints {
   constructor(private _client: ApiClient) {}
 
-  async getPredictions(query: GetPredictionsQuery) {
+  async getPredictions(id?: string | string[]) {
+    const broadcasterId = await this._client.getUserId();
+
     const config: RequestConfig = {
       url: "predictions",
       method: "GET",
       oauth: true,
-      query,
+      query: createGetPredictionsQuery(broadcasterId, id),
     };
 
     const res = await this._client.enqueueCall<
@@ -63,26 +66,30 @@ export class PredictionsApi implements PredictionsApiEndpoints {
   }
 
   async createPrediction(body: CreatePredictionBody) {
+    const broadcasterId = await this._client.getUserId();
+
     const res = await this._client.enqueueCall<
       HelixResponse<ChannelPrediction>
     >({
       url: "predictions",
       method: "POST",
       oauth: true,
-      body,
+      body: { ...body, ...createBroadcasterQuery(broadcasterId) },
     });
 
     return res.data[0];
   }
 
   async endPrediction(body: EndPredictionBody) {
+    const broadcasterId = await this._client.getUserId();
+
     const res = await this._client.enqueueCall<
       HelixResponse<ChannelPrediction>
     >({
       url: "predictions",
       method: "PATCH",
       oauth: true,
-      body,
+      body: { ...body, ...createBroadcasterQuery(broadcasterId) },
     });
 
     return res.data[0];

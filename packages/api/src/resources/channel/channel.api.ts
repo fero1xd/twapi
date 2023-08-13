@@ -39,31 +39,24 @@ export interface ChannelApiEndPoints {
   /**
    * Updates a channel’s properties.
    *
-   * @param broadcasterId The ID of the broadcaster whose channel you want to update. This ID must match the user ID in the user access token.
    * @param data Fields that you want to update
    */
-  updateChannelInformation(
-    broadcasterId: string,
-    data: ChannelUpdateData
-  ): Promise<void>;
+  updateChannelInformation(data: ChannelUpdateData): Promise<void>;
 
   /**
    * Gets the broadcaster’s list editors.
    *
-   * @param broadcasterId The ID of the broadcaster that owns the channel. This ID must match the user ID in the access token.
    * @returns A list of users that are editors for the specified broadcaster. The list is empty if the broadcaster doesn’t have editors.
    */
-  getChannelEditors(broadcasterId: string): Promise<ChannelEditor[]>;
+  getChannelEditors(): Promise<ChannelEditor[]>;
 
   /**
    * Gets a list of broadcasters that the specified user follows. You can also use this endpoint to see whether a user follows a specific broadcaster.
    *
-   * @param userId A user’s ID. Returns the list of broadcasters that this user follows. This ID must match the user ID in the user OAuth token.
    * @param broadcasterId A broadcaster’s ID. Use this parameter to see whether the user follows this broadcaster. If specified, the response contains this broadcaster if the user follows them. If not specified, the response contains all broadcasters that the user follows.
    * @returns A paginated iterator of followed channels
    */
   getFollowedChannels(
-    userId: string,
     broadcasterId?: string
   ): Promise<HelixPaginatedResponseIterator<FollowedChannel>>;
 
@@ -82,15 +75,11 @@ export interface ChannelApiEndPoints {
   /**
    * Starts a commercial on the specified channel.
    * 
-   * @param broadcasterId The ID of the partner or affiliate broadcaster that wants to run the commercial. This ID must match the user ID found in the OAuth token.
    * @param length The length of the commercial to run, in seconds. Twitch tries to serve a commercial that’s the requested length, but it may be shorter or longer. The maximum length you should request is 180 seconds.
 
    * @returns The status of your start commercial request
    */
-  startCommerical(
-    broadcasterId: string,
-    length: number
-  ): Promise<CommericalStatus>;
+  startCommerical(length: number): Promise<CommericalStatus>;
 }
 
 export class ChannelApi implements ChannelApiEndPoints {
@@ -126,23 +115,23 @@ export class ChannelApi implements ChannelApiEndPoints {
     return res.data;
   }
 
-  async updateChannelInformation(
-    broadcasterId: string,
-    data: ChannelUpdateData
-  ) {
+  async updateChannelInformation(data: ChannelUpdateData) {
+    const userId = await this._client.getUserId();
+
     await this._client.enqueueCall({
       url: "channels",
-      query: createBroadcasterQuery(broadcasterId),
+      query: createBroadcasterQuery(userId),
       method: "PATCH",
       body: data,
       oauth: true,
     });
   }
 
-  async getChannelEditors(broadcasterId: string) {
+  async getChannelEditors() {
+    const userId = await this._client.getUserId();
     const res = await this._client.enqueueCall<HelixResponse<ChannelEditor>>({
       url: "channels/editors",
-      query: createBroadcasterQuery(broadcasterId),
+      query: createBroadcasterQuery(userId),
       method: "GET",
       oauth: true,
     });
@@ -150,7 +139,9 @@ export class ChannelApi implements ChannelApiEndPoints {
     return res.data;
   }
 
-  async getFollowedChannels(userId: string, broadcasterId?: string) {
+  async getFollowedChannels(broadcasterId?: string) {
+    const userId = await this._client.getUserId();
+
     const config: RequestConfig = {
       url: "channels/followed",
       query: createFollowedQuery(userId, broadcasterId),
@@ -180,13 +171,15 @@ export class ChannelApi implements ChannelApiEndPoints {
     return new HelixPaginatedResponseIterator(res, this._client, config);
   }
 
-  async startCommerical(broadcasterId: string, length: number) {
+  async startCommerical(length: number) {
+    const userId = await this._client.getUserId();
+
     const res = await this._client.enqueueCall<HelixResponse<CommericalStatus>>(
       {
         url: "channels/commercial",
         method: "POST",
 
-        query: createCommercialQuery(broadcasterId, length),
+        query: createCommercialQuery(userId, length),
         oauth: true,
       }
     );

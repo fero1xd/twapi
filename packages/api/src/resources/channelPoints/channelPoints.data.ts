@@ -1,4 +1,3 @@
-import { HelixPaginatedResponse } from "../../internal/interfaces";
 import { BroadcasterInfo, UserInfo } from "../../internal/types";
 import { Image } from "../common.data";
 
@@ -53,7 +52,6 @@ export interface UpdateRewardBody extends Partial<CreateRewardBody> {
 }
 
 export interface GetCustomRewardRedemptionQuery {
-  broadcaster_id: string;
   reward_id: string;
   status: RewardStatus;
   id?: string | string[];
@@ -77,6 +75,5 @@ export interface RewardRedemptionResponse extends BroadcasterInfo, UserInfo {
 
 export interface UpdateRedemptionStatusQuery {
   id: string | string[];
-  broadcaster_id: string;
   reward_id: string;
 }

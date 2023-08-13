@@ -41,7 +41,6 @@ export interface ScheduleSegment {
 }
 
 export interface UpdateChannelStreamScheduleQuery {
-  broadcaster_id: string;
   is_vacation_enabled?: boolean;
   vacation_start_time?: string;
   vacation_end_time?: string;

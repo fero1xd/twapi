@@ -1,7 +1,7 @@
 import { ApiClient } from "../../client";
 import { HelixResponse } from "../../internal/interfaces";
 import { createBroadModQuery } from "../chat/chat";
-import { createBroadcasterQuery } from "../common.data";
+import { createBroadcasterQuery, createModeratorQuery } from "../common.data";
 import {
   AssignGuestStarSlotQuery,
   DeleteGuestStarSlotQuery,
@@ -21,23 +21,19 @@ export interface GuestStarApiEndpoints {
      * BETA Gets the channel settings for configuration of the Guest Star feature for a particular host.
      * 
      * @param broadcasterId The ID of the broadcaster you want to get guest star settings for.
-     * @param moderatorId The ID of the broadcaster or a user that has permission to moderate the broadcaster’s chat room. This ID must match the user ID in the user access token.
 
      * @returns Guest star configuration for the user
   */
   getChannelGuestStarSettings(
-    broadcasterId: string,
-    moderatorId: string
+    broadcasterId: string
   ): Promise<GuestStarSettings>;
 
   /**
    * BETA Mutates the channel settings for configuration of the Guest Star feature for a particular host.
    *
-   * @param broadcasterId The ID of the broadcaster you want to update Guest Star settings for.
    * @param body Data to update
    */
   updateChannelGuestStarSettings(
-    broadcasterId: string,
     body: UpdateGuestStarSettingsBody
   ): Promise<void>;
 
@@ -45,36 +41,26 @@ export interface GuestStarApiEndpoints {
    * BETA Gets information about an ongoing Guest Star session for a particular channel.
    *
    * @param broadcasterId ID for the user hosting the Guest Star session.
-   * @param moderatorId The ID of the broadcaster or a user that has permission to moderate the broadcaster’s chat room. This ID must match the user ID in the user access token.
    *
    * @returns Summary of the session details
    */
-  getGuestStarSession(
-    broadcasterId: string,
-    moderatorId: string
-  ): Promise<SessionDetail>;
+  getGuestStarSession(broadcasterId: string): Promise<SessionDetail>;
 
   /**
    * BETA Programmatically creates a Guest Star session on behalf of the broadcaster. Requires the broadcaster to be present in the call interface, or the call will be ended automatically.
    *
-   * @param broadcasterId The ID of the broadcaster you want to create a Guest Star session for. Provided broadcaster_id must match the user_id in the auth token.
-   *
    * @returns Summary of the session details.
    */
-  createGuestStarSession(broadcasterId: string): Promise<SessionDetail>;
+  createGuestStarSession(): Promise<SessionDetail>;
 
   /**
    * BETA Programmatically ends a Guest Star session on behalf of the broadcaster. Performs the same action as if the host clicked the “End Call” button in the Guest Star UI.
    *
-   * @param broadcasterId The ID of the broadcaster you want to end a Guest Star session for. Provided broadcaster_id must match the user_id in the auth token.
    * @param sessionId ID for the session to end on behalf of the broadcaster.
    *
    * @returns Summary of the session details when the session was ended.
    */
-  endGuestStarSession(
-    broadcasterId: string,
-    sessionId: string
-  ): Promise<SessionDetail>;
+  endGuestStarSession(sessionId: string): Promise<SessionDetail>;
 
   /**
    * BETA Provides the caller with a list of pending invites to a Guest Star session, including the invitee’s ready status while joining the waiting room.
@@ -133,10 +119,9 @@ export interface GuestStarApiEndpoints {
 export class GuestStarApi implements GuestStarApiEndpoints {
   constructor(private _client: ApiClient) {}
 
-  async getChannelGuestStarSettings(
-    broadcasterId: string,
-    moderatorId: string
-  ) {
+  async getChannelGuestStarSettings(broadcasterId: string) {
+    const moderatorId = await this._client.getUserId();
+
     const res = await this._client.enqueueCall<
       HelixResponse<GuestStarSettings>
     >({
@@ -149,10 +134,9 @@ export class GuestStarApi implements GuestStarApiEndpoints {
     return res.data[0];
   }
 
-  async updateChannelGuestStarSettings(
-    broadcasterId: string,
-    body: UpdateGuestStarSettingsBody
-  ) {
+  async updateChannelGuestStarSettings(body: UpdateGuestStarSettingsBody) {
+    const broadcasterId = await this._client.getUserId();
+
     await this._client.enqueueCall({
       url: "guest_star/channel_settings",
       method: "PUT",
@@ -162,7 +146,9 @@ export class GuestStarApi implements GuestStarApiEndpoints {
     });
   }
 
-  async getGuestStarSession(broadcasterId: string, moderatorId: string) {
+  async getGuestStarSession(broadcasterId: string) {
+    const moderatorId = await this._client.getUserId();
+
     const res = await this._client.enqueueCall<HelixResponse<SessionDetail>>({
       url: "guest_star/session",
       method: "GET",
@@ -173,7 +159,9 @@ export class GuestStarApi implements GuestStarApiEndpoints {
     return res.data[0];
   }
 
-  async createGuestStarSession(broadcasterId: string): Promise<SessionDetail> {
+  async createGuestStarSession(): Promise<SessionDetail> {
+    const broadcasterId = await this._client.getUserId();
+
     const res = await this._client.enqueueCall<HelixResponse<SessionDetail>>({
       url: "guest_star/session",
       method: "POST",
@@ -184,7 +172,9 @@ export class GuestStarApi implements GuestStarApiEndpoints {
     return res.data[0];
   }
 
-  async endGuestStarSession(broadcasterId: string, sessionId: string) {
+  async endGuestStarSession(sessionId: string) {
+    const broadcasterId = await this._client.getUserId();
+
     const res = await this._client.enqueueCall<HelixResponse<SessionDetail>>({
       url: "guest_star/session",
       method: "DELETE",
@@ -199,67 +189,81 @@ export class GuestStarApi implements GuestStarApiEndpoints {
   }
 
   async getGuestStarInvites(query: GetGuestStarInvitesQuery) {
+    const moderatorId = await this._client.getUserId();
+
     const res = await this._client.enqueueCall<HelixResponse<Invite>>({
       url: "guest_star/invites",
       oauth: true,
       method: "GET",
-      query,
+      query: { ...query, ...createModeratorQuery(moderatorId) },
     });
 
     return res.data;
   }
 
   async sendGuestStarInvite(query: SendInviteQuery) {
+    const moderatorId = await this._client.getUserId();
+
     await this._client.enqueueCall({
       url: "guest_star/invites",
       method: "POST",
       oauth: true,
-      query,
+      query: { ...query, ...createModeratorQuery(moderatorId) },
     });
   }
 
   async deleteGuestStarInvite(query: DeleteInviteQuery) {
+    const moderatorId = await this._client.getUserId();
+
     await this._client.enqueueCall({
       url: "guest_star/invites",
       method: "DELETE",
       oauth: true,
-      query,
+      query: { ...query, ...createModeratorQuery(moderatorId) },
     });
   }
 
   async assignGuestStarSlot(query: AssignGuestStarSlotQuery) {
+    const moderatorId = await this._client.getUserId();
+
     await this._client.enqueueCall({
       url: "guest_star/slot",
       method: "POST",
       oauth: true,
-      query,
+      query: { ...query, ...createModeratorQuery(moderatorId) },
     });
   }
 
   async updateGuestStarSlot(query: UpdateGuestStarSlotQuery) {
+    const moderatorId = await this._client.getUserId();
+
     await this._client.enqueueCall({
       url: "guest_star/slot",
       method: "PATCH",
       oauth: true,
-      query,
+      query: { ...query, ...createModeratorQuery(moderatorId) },
     });
   }
 
   async deleteGuestStarSlot(query: DeleteGuestStarSlotQuery) {
+    const moderatorId = await this._client.getUserId();
+
     await this._client.enqueueCall({
       url: "guest_star/slot",
       method: "DELETE",
       oauth: true,
-      query,
+      query: { ...query, ...createModeratorQuery(moderatorId) },
     });
   }
 
   async updateGuestStarSlotSettings(query: UpdateGuestStarSlotSettingsQuery) {
+    const moderatorId = await this._client.getUserId();
+
     await this._client.enqueueCall({
       url: "guest_star/slot_settings",
       method: "PATCH",
       oauth: true,
-      query,
+      query: { ...query, ...createModeratorQuery(moderatorId) },
     });
   }
 }

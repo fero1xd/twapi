@@ -11,7 +11,6 @@ export interface MessageApproval {
 }
 
 export interface ManageAutomodMessageBody {
-  user_id: string;
   msg_id: string;
   action: "ALLOW" | "DENY";
 }
@@ -68,11 +67,13 @@ export interface BlockedTerm extends BroadcasterModeratorQuery {
   expires_at: string | null;
 }
 
-export interface RemoveBlockedTermQuery extends BroadcasterModeratorQuery {
+export interface RemoveBlockedTermQuery {
+  broadcaster_id: string;
   id: string;
 }
 
-export interface DeleteChatMessageQuery extends BroadcasterModeratorQuery {
+export interface DeleteChatMessageQuery {
+  broadcaster_id: string;
   message_id: string;
 }
 

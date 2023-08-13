@@ -9,7 +9,6 @@ export interface WhisperEndpoints {
 
      * **Rate Limits**: You may whisper to a maximum of 40 unique recipients per day. Within the per day limit, you may whisper a maximum of 3 whispers per second and a maximum of 100 whispers per minute.
      
-     * @param from The ID of the user sending the whisper. This user must have a verified phone number. This ID must match the user ID in the user access token.
      * @param to The ID of the user to receive the whisper.
      * @param message The whisper message to send. The message must not be empty.
         The maximum message lengths are:
@@ -17,13 +16,15 @@ export interface WhisperEndpoints {
         10,000 characters if the user you're sending the message to has whispered you before.
         Messages that exceed the maximum length are truncated.
      */
-  sendWhisper(from: string, to: string, message: string): Promise<void>;
+  sendWhisper(to: string, message: string): Promise<void>;
 }
 
 export class WhispersApi implements WhisperEndpoints {
   constructor(private _client: ApiClient) {}
 
-  async sendWhisper(from: string, to: string, message: string) {
+  async sendWhisper(to: string, message: string) {
+    const from = await this._client.getUserId();
+
     await this._client.enqueueCall({
       url: "whispers",
       method: "POST",

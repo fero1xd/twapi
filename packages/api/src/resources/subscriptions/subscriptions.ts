@@ -1,13 +1,9 @@
 export const createGetSubscriptionsQuery = (
-  broadcasterId: string,
+  broadcasterId?: string,
   userIds?: string | string[]
 ) => {
-  return userIds
-    ? {
-        broadcaster_id: broadcasterId,
-        user_id: userIds,
-      }
-    : {
-        broadcaster_id: broadcasterId,
-      };
+  return {
+    broadcaster_id: broadcasterId,
+    user_id: userIds,
+  };
 };

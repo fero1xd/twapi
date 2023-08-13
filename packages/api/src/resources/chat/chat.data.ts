@@ -49,8 +49,8 @@ export interface ChatSettings {
   follower_mode_duration: number | null;
   moderator_id: string;
 
-  non_moderator_chat_delay: boolean;
-  non_moderator_chat_delay_duration: number | null;
+  non_moderator_chat_delay?: boolean;
+  non_moderator_chat_delay_duration?: number | null;
   slow_mode: boolean;
   slow_mode_wait_time: number | null;
   subscriber_mode: boolean;

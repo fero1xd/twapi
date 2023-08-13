@@ -24,7 +24,7 @@ export interface BitsApiEndpoints {
    * @param broadcasterId The ID of the broadcaster whose custom Cheermotes you want to get. Specify the broadcaster’s ID if you want to include the broadcaster’s Cheermotes in the response (not all broadcasters upload Cheermotes). If not specified, the response contains only global Cheermotes.
    * @returns The list of Cheermotes. The list is in ascending order by the order field’s value.
    */
-  getCheermotes(broadcasterId: string): Promise<Cheermotes[]>;
+  getCheermotes(broadcasterId?: string): Promise<Cheermotes[]>;
 }
 
 export class BitsApi implements BitsApiEndpoints {
