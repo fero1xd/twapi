@@ -1,4 +1,4 @@
-import { Logger, createLogger } from "@twapi/logger";
+import { type LoggerType, createLogger } from "@twapi/logger";
 import { Credentials } from "./credentials";
 import { GetUserAccessTokenInfoResponse, IAuthProvider } from "./interfaces";
 import {
@@ -10,7 +10,7 @@ import {
 
 export class AuthProvider implements IAuthProvider {
   private readonly _credentials: Credentials;
-  private readonly _log: Logger;
+  private readonly _log: LoggerType;
 
   private _scopes?: string[];
 

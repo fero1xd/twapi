@@ -1,4 +1,4 @@
-import { Logger, createLogger } from "@twapi/logger";
+import { type LoggerType, createLogger } from "@twapi/logger";
 import WebSocket, { MessageEvent } from "isomorphic-ws";
 import { v4 } from "uuid";
 import { topicsMap } from "./internal/constants";
@@ -25,7 +25,7 @@ export class PubSub {
   private _authProvider: AuthProvider;
 
   // Logger
-  private log: Logger;
+  private log: LoggerType;
 
   // This interval sends PING message at a fixed interval
   private heartbeatInterval?: NodeJS.Timer;

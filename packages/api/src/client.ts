@@ -1,4 +1,4 @@
-import { Logger, createLogger } from "@twapi/logger";
+import { type LoggerType, createLogger } from "@twapi/logger";
 import { RateLimiter } from "./internal/queue/ratelimiter";
 import callApi, { transformTwitchApiResponse } from "./internal/api";
 import { RequestConfig } from "./internal/interfaces";
@@ -7,7 +7,7 @@ import { AuthProvider } from "@twapi/auth";
 import retry from "retry";
 
 export class ApiClient {
-  private _log: Logger;
+  private _log: LoggerType;
 
   private _rateLimiter: RateLimiter;
   private _appRateLimiter: RateLimiter;

@@ -1,4 +1,4 @@
-import { Logger, createLogger } from "@twapi/logger";
+import { type LoggerType, createLogger } from "@twapi/logger";
 import axios from "axios";
 import WebSocket, { MessageEvent, CloseEvent } from "isomorphic-ws";
 import { ConnectionClosed, CreateSubscriptionRequestFailed } from "./errors";
@@ -56,7 +56,7 @@ export class EventSub {
   private reconnect: boolean = false;
 
   // Logger
-  private log: Logger;
+  private log: LoggerType;
 
   /**
    * ---------CONSTRUCTOR--------

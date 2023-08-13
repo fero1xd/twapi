@@ -1,5 +1,5 @@
 import { QueueItem, RequestConfig } from "../interfaces";
-import { Logger, createLogger } from "@twapi/logger";
+import { type LoggerType, createLogger } from "@twapi/logger";
 
 export interface RateLimiterConfig {
   gap: number;
@@ -16,7 +16,7 @@ export class RateLimiter {
 
   private _callback: (config: RequestConfig) => any;
 
-  private _log: Logger;
+  private _log: LoggerType;
 
   constructor({ gap, performRequest }: RateLimiterConfig) {
     this.gap = gap;

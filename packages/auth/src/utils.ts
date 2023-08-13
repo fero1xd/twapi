@@ -1,4 +1,4 @@
-import { Logger } from "@twapi/logger";
+import { type LoggerType } from "@twapi/logger";
 import { Credentials } from "./credentials";
 import {
   GetAppAccessTokenInfoResponse,
@@ -10,7 +10,7 @@ import { fetch, Headers } from "cross-fetch";
 
 export const fetchAppAccessToken = async (
   credentials: Credentials,
-  _log: Logger
+  _log: LoggerType
 ) => {
   const headers = new Headers();
   headers.set("Content-Type", "application/json");
@@ -45,7 +45,7 @@ export const fetchAccessTokenInfo = async <
 >(
   token: string,
   app: boolean,
-  _log: Logger
+  _log: LoggerType
 ) => {
   const headers = new Headers();
   headers.set("Content-Type", "application/json");
@@ -72,7 +72,7 @@ export const fetchAccessTokenInfo = async <
 
 export const refreshUserAccessToken = async (
   credentials: Credentials,
-  _log: Logger
+  _log: LoggerType
 ) => {
   const headers = new Headers();
   headers.set("Content-Type", "application/json");

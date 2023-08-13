@@ -22,4 +22,4 @@ export const createLogger = (name?: string) => {
   });
 };
 
-export type Logger = winston.Logger;
+export type LoggerType = winston.Logger;
