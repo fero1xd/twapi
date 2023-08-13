@@ -1,5 +1,11 @@
 # @twapi/auth
 
+## 0.2.2
+
+### Patch Changes
+
+- ebe98f8: @twapi/logger: `Logger`` type refactor
+
 ## 0.2.1
 
 ### Patch Changes

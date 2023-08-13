@@ -1,6 +1,6 @@
 {
   "name": "@twapi/eventsub-example",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "description": "An example showing how to use @twapi/eventsub to interact with twitch eventsub",
   "private": true,
   "main": "index.js",

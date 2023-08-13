@@ -1,5 +1,11 @@
 # @twapi/pubsub
 
+## 1.0.1
+
+### Patch Changes
+
+- ebe98f8: @twapi/logger: `Logger`` type refactor
+
 ## 1.0.0
 
 ### Major Changes
