@@ -1,11 +1,11 @@
 {
   "name": "@twapi/logger",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Shared winston logger",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
-  "private": true,
+  "private": false,
   "scripts": {
     "lint": "eslint \"**/*.{ts,tsx}\" --max-warnings 0",
     "typecheck": "tsc --noEmit",
