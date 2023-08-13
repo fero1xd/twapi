@@ -1,6 +1,6 @@
 {
   "name": "@twapi/api",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Interact with twitch's hellix Api",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
@@ -26,8 +26,8 @@
     "tsup": "^7.1.0"
   },
   "dependencies": {
-    "@twapi/auth": "0.2.3",
-    "@twapi/logger": "1.0.1",
+    "@twapi/auth": "0.2.4",
+    "@twapi/logger": "1.0.2",
     "@twapi/tsconfig": "0.1.0"
   }
 }

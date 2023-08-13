@@ -1,5 +1,13 @@
 # @twapi/auth
 
+## 0.2.4
+
+### Patch Changes
+
+- 51764f1: chore: updated dependency
+- Updated dependencies [51764f1]
+  - @twapi/logger@1.0.2
+
 ## 0.2.3
 
 ### Patch Changes

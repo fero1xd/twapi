@@ -1,5 +1,11 @@
 # @twapi/logger
 
+## 1.0.2
+
+### Patch Changes
+
+- 51764f1: chore: updated dependency
+
 ## 1.0.1
 
 ### Patch Changes

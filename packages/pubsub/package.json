@@ -1,6 +1,6 @@
 {
   "name": "@twapi/pubsub",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Interact with twitch PubSub system",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
@@ -28,8 +28,8 @@
     "ws": "^8.13.0"
   },
   "dependencies": {
-    "@twapi/auth": "0.2.3",
-    "@twapi/logger": "1.0.1",
+    "@twapi/auth": "0.2.4",
+    "@twapi/logger": "1.0.2",
     "@twapi/tsconfig": "0.1.0"
   }
 }

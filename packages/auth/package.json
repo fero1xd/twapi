@@ -1,6 +1,6 @@
 {
   "name": "@twapi/auth",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "description": "Auth provider for all other packages",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
@@ -24,7 +24,7 @@
     "tsup": "^7.1.0"
   },
   "dependencies": {
-    "@twapi/logger": "1.0.1",
+    "@twapi/logger": "1.0.2",
     "@twapi/tsconfig": "0.1.0"
   }
 }
