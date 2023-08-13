@@ -1,5 +1,12 @@
 # @twapi/eventsub
 
+## 1.0.4
+
+### Patch Changes
+
+- @twapi/auth@0.2.2
+- @twapi/logger@1.0.1
+
 ## 1.0.3
 
 ### Patch Changes
