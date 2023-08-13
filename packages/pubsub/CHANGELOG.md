@@ -1,5 +1,11 @@
 # @twapi/pubsub
 
+## 1.0.2
+
+### Patch Changes
+
+- 7118372: fix(pubsub): ignoring unwanted message (thread)
+
 ## 1.0.1
 
 ### Patch Changes
