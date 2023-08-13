@@ -1,6 +1,6 @@
 {
   "name": "@twapi/eventsub",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "Interact with twitch EventSub system",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
@@ -36,8 +36,8 @@
     "access": "public"
   },
   "dependencies": {
-    "@twapi/auth": "0.2.3",
-    "@twapi/logger": "1.0.1",
+    "@twapi/auth": "0.2.4",
+    "@twapi/logger": "1.0.2",
     "@twapi/tsconfig": "0.1.0",
     "@twapi/eslint-config-custom": "0.1.0"
   }
