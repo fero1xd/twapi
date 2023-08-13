@@ -20,8 +20,6 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "@twapi/eslint-config-custom": "workspace:^",
-    "@twapi/tsconfig": "workspace:*",
     "@types/node": "^17.0.12",
     "@types/uuid": "^9.0.2",
     "@types/ws": "^8.5.5",
@@ -38,7 +36,9 @@
     "access": "public"
   },
   "dependencies": {
-    "@twapi/auth": "workspace:^",
-    "@twapi/logger": "workspace:^"
+    "@twapi/auth": "0.2.3",
+    "@twapi/logger": "1.0.1",
+    "@twapi/tsconfig": "0.1.0",
+    "@twapi/eslint-config-custom": "0.1.0"
   }
 }

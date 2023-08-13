@@ -20,6 +20,6 @@
     "winston": "^3.9.0"
   },
   "dependencies": {
-    "@twapi/tsconfig": "workspace:^"
+    "@twapi/tsconfig": "0.1.0"
   }
 }

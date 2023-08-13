@@ -19,10 +19,12 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "@twapi/logger": "workspace:^",
-    "@twapi/tsconfig": "workspace:^",
     "@types/node": "^20.4.8",
     "cross-fetch": "^4.0.0",
     "tsup": "^7.1.0"
+  },
+  "dependencies": {
+    "@twapi/logger": "1.0.1",
+    "@twapi/tsconfig": "0.1.0"
   }
 }

@@ -149,16 +149,17 @@ importers:
         version: 7.1.0(typescript@4.9.5)
 
   packages/api:
-    devDependencies:
+    dependencies:
       '@twapi/auth':
-        specifier: workspace:^
-        version: link:../auth
+        specifier: 0.2.3
+        version: 0.2.3
       '@twapi/logger':
-        specifier: workspace:^
+        specifier: 1.0.1
         version: link:../logger
       '@twapi/tsconfig':
-        specifier: workspace:^
+        specifier: 0.1.0
         version: link:../config/tsconfig
+    devDependencies:
       '@types/node':
         specifier: ^20.4.2
         version: 20.4.2
@@ -176,13 +177,14 @@ importers:
         version: 7.1.0(typescript@4.9.5)
 
   packages/auth:
-    devDependencies:
+    dependencies:
       '@twapi/logger':
-        specifier: workspace:^
+        specifier: 1.0.1
         version: link:../logger
       '@twapi/tsconfig':
-        specifier: workspace:^
+        specifier: 0.1.0
         version: link:../config/tsconfig
+    devDependencies:
       '@types/node':
         specifier: ^20.4.8
         version: 20.4.8
@@ -213,18 +215,18 @@ importers:
   packages/eventsub:
     dependencies:
       '@twapi/auth':
-        specifier: workspace:^
-        version: link:../auth
-      '@twapi/logger':
-        specifier: workspace:^
-        version: link:../logger
-    devDependencies:
+        specifier: 0.2.3
+        version: 0.2.3
       '@twapi/eslint-config-custom':
-        specifier: workspace:^
+        specifier: 0.1.0
         version: link:../config/eslint-config-custom
+      '@twapi/logger':
+        specifier: 1.0.1
+        version: link:../logger
       '@twapi/tsconfig':
-        specifier: workspace:*
+        specifier: 0.1.0
         version: link:../config/tsconfig
+    devDependencies:
       '@types/node':
         specifier: ^17.0.12
         version: 17.0.45
@@ -262,7 +264,7 @@ importers:
   packages/logger:
     dependencies:
       '@twapi/tsconfig':
-        specifier: workspace:^
+        specifier: 0.1.0
         version: link:../config/tsconfig
     devDependencies:
       '@types/node':
@@ -276,16 +278,17 @@ importers:
         version: 3.9.0
 
   packages/pubsub:
-    devDependencies:
+    dependencies:
       '@twapi/auth':
-        specifier: workspace:^
-        version: link:../auth
+        specifier: 0.2.3
+        version: 0.2.3
       '@twapi/logger':
-        specifier: workspace:^
+        specifier: 1.0.1
         version: link:../logger
       '@twapi/tsconfig':
-        specifier: workspace:^
+        specifier: 0.1.0
         version: link:../config/tsconfig
+    devDependencies:
       '@types/node':
         specifier: ^20.4.2
         version: 20.4.2
@@ -1368,6 +1371,10 @@ packages:
       - '@types/node'
       - typescript
     dev: true
+
+  /@twapi/auth@0.2.3:
+    resolution: {integrity: sha512-1bn5/xOUVt53wDpbIL8fNYvnRZGV9EY2eHBFSAv7nv8Rs7t70FPEUwBwnyFwqZZLzwBFt8KkG64ORPOexa9GWA==}
+    dev: false
 
   /@types/acorn@4.0.6:
     resolution: {integrity: sha512-veQTnWP+1D/xbxVrPC3zHnCZRjSrKfhbMUlEA43iMZLu7EsnTtkJklIuwrCPbOi8YkvDQAiW05VQQFvvz9oieQ==}
