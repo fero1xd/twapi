@@ -148,7 +148,7 @@ export class AuthProvider implements IAuthProvider {
     if (!appAccessToken || !expiresIn) {
       const newAppToken = await this._fetchAppAccessToken();
       if (newAppToken) {
-        this._log.info("Got app access token for this firt time.");
+        this._log.info("Got app access token for this first time.");
         return newAppToken;
       }
     }
