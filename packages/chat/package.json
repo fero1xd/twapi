@@ -19,9 +19,12 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@twapi/auth": "0.2.4",
+    "@twapi/logger": "workspace:1.0.2",
     "@twapi/tsconfig": "0.1.0"
   },
   "devDependencies": {
+    "isomorphic-ws": "^5.0.0",
     "tsup": "^7.1.0"
   }
 }
