@@ -1,11 +1,11 @@
 {
-  "name": "@twapi/api",
-  "version": "0.1.2",
-  "description": "Interact with twitch's helix Api",
+  "name": "@twapi/chat",
+  "version": "0.0.0",
+  "description": "Interact with twitch's chat api",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
-  "private": false,
+  "private": true,
   "files": [
     "dist"
   ],
@@ -18,16 +18,10 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "devDependencies": {
-    "@types/node": "^20.4.2",
-    "@types/retry": "^0.12.2",
-    "cross-fetch": "^4.0.0",
-    "retry": "^0.13.1",
-    "tsup": "^7.1.0"
-  },
   "dependencies": {
-    "@twapi/auth": "0.2.4",
-    "@twapi/logger": "1.0.2",
     "@twapi/tsconfig": "0.1.0"
+  },
+  "devDependencies": {
+    "tsup": "^7.1.0"
   }
 }

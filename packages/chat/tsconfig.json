@@ -1,0 +1,3 @@
+{
+  "extends": "@twapi/tsconfig/base.json"
+}
