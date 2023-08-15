@@ -4,6 +4,7 @@ import { type LoggerType, createLogger } from "@twapi/logger";
 import { splitIrcMessage } from "./internal/utils";
 
 export class ChatClient {
+  // Websocket connection
   private _connection?: WebSocket;
 
   // Authentication provider
@@ -15,6 +16,11 @@ export class ChatClient {
   // Logger
   private _log: LoggerType;
 
+  /**
+   * --------CONSTRUCTOR--------
+   *
+   * @param authProvider Autnentication provider for the chat client
+   */
   constructor(authProvider: AuthProvider) {
     this._authProvider = authProvider;
     this._capabilites = [

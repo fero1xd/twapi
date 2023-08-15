@@ -78,14 +78,51 @@ export class PubSub {
       return;
     }
 
-    if (!this.connectedListener) {
-      this.connectedListener = connectedListener;
-    }
+    this.connectedListener = connectedListener;
 
     this.connection = new WebSocket("wss://pubsub-edge.twitch.tv");
     this.connection.onopen = this._onOpen.bind(this);
     this.connection.onclose = this._onClose.bind(this);
     this.connection.onmessage = this._onMessage.bind(this);
+  }
+
+  /**
+   * Attempts to close the connection and clean up any listeners
+   */
+  public stop() {
+    return new Promise<boolean>((res, rej) => {
+      if (!this.connection) {
+        this.log.error("Cannot close connection, not initialized yet.");
+        res(true);
+        return;
+      }
+
+      if (
+        this.connection.readyState === 0 ||
+        this.connection.readyState === 1
+      ) {
+        this.reconnect = false;
+
+        clearInterval(this.heartbeatInterval);
+        clearTimeout(this.deadConnectionTimeout);
+
+        this.pendingListeners = [];
+        this.listeners = [];
+        this.hasCalled = false;
+
+        this.connection.onclose = () => {
+          this.connection &&
+            (this.connection.onclose = this._onClose.bind(this));
+          this.log.info("Successfully closed connection to twitch.");
+          res(true);
+        };
+
+        this.connection.close();
+      } else {
+        this.log.error("Cannot close connection right now.");
+        rej("Cannot close connection right now.");
+      }
+    });
   }
 
   /**
@@ -349,28 +386,55 @@ export class PubSub {
    * @param listener The actual wrapped listener
    */
   public removeListener(listener: ListenerWrap<any>) {
-    const finalTopic = listener.getParsedTopic();
+    return new Promise<boolean>((res, rej) => {
+      const finalTopic = listener.getParsedTopic();
 
-    this.log.info("Unsubscribing to topic: " + finalTopic);
+      this.log.info("Unsubscribing to topic: " + finalTopic);
 
-    this.listeners = this.listeners.filter(
-      (l) => l.getNonce() !== listener.getNonce()
-    );
+      this.listeners = this.listeners.filter(
+        (l) => l.getNonce() !== listener.getNonce()
+      );
 
-    const multipleListeners = this.listeners.filter(
-      (l) => l.getParsedTopic() === finalTopic
-    );
+      const multipleListeners = this.listeners.filter(
+        (l) => l.getParsedTopic() === finalTopic
+      );
 
-    // Pubsub sends a notification only once even if you have subscribed to the event multiple times,
-    // But to support multiple listeners we will only send an UNLISTEN command when we dont have anymore listener for this topic
-    if (multipleListeners.length === 0) {
-      this._send({
-        type: MessageType.UNLISTEN,
-        data: {
-          topics: [finalTopic],
-        },
-      });
-    }
+      const nonce = this._generateNonce();
+
+      // Pubsub sends a notification only once even if you have subscribed to the event multiple times,
+      // But to support multiple listeners we will only send an UNLISTEN command when we dont have anymore listener for this topic
+      if (multipleListeners.length === 0) {
+        this._send({
+          type: MessageType.UNLISTEN,
+          nonce,
+          data: {
+            topics: [finalTopic],
+          },
+        });
+
+        let timeout: NodeJS.Timeout;
+
+        const unsub = this._addResponseListener((e) => {
+          if (e.nonce !== nonce) return;
+
+          if (timeout) clearTimeout(timeout);
+
+          this.log.info("Unsubscribed to topic: " + listener.getParsedTopic());
+          res(true);
+        });
+
+        timeout = setTimeout(() => {
+          unsub();
+          this.log.error(
+            "Timeout while unsubscribing topic: " + listener.getParsedTopic()
+          );
+          rej("Timeout");
+        }, 3000);
+      } else {
+        this.log.info("Unsubscribed to topic: " + listener.getParsedTopic());
+        res(true);
+      }
+    });
   }
 
   /**

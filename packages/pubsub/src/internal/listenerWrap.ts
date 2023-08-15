@@ -36,8 +36,8 @@ export class ListenerWrap<T extends Topics> implements ListenerWrapType<T> {
     this._listener.setRegisteredHandler(handler);
   }
 
-  unsubscribe() {
-    this._pubsub.removeListener(this);
+  unsubscribe(): Promise<boolean> {
+    return this._pubsub.removeListener(this);
   }
 
   getParsedTopic() {

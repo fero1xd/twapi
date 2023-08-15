@@ -85,7 +85,7 @@ export interface ListenerWrapType<T extends Topics> {
   onError: (handler: ErrorHandlerFn) => void;
   onRevocation: (handler: Fn) => void;
   onTimeout: (handler: Fn) => void;
-  unsubscribe: () => void;
+  unsubscribe: () => Promise<boolean>;
 }
 
 export type Fn = () => void;

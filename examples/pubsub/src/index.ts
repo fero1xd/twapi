@@ -11,23 +11,26 @@ const credentials = new Credentials(
 
 const pubusb = new PubSub(new AuthProvider(credentials));
 
-const listener = pubusb.register("whispers", {
-  user_id: 642902413,
-});
+pubusb.run(async () => {
+  const listener = pubusb.register("whispers", {
+    user_id: 642902413,
+  });
 
-listener.onTrigger((d) => {
-  console.log(d);
-});
+  listener.onTrigger(async (d) => {
+    console.log(d.data_object.recipient);
 
-listener.onRevocation(() => {
-  console.log("revoked");
-});
+    await listener.unsubscribe();
+  });
 
-listener.onRegistered(() => {
-  console.log("registered");
-});
+  listener.onRevocation(() => {
+    console.log("revoked");
+  });
 
-listener.onTimeout(() => {
-  console.log("timed out");
+  listener.onRegistered(() => {
+    console.log("registered");
+  });
+
+  listener.onTimeout(() => {
+    console.log("timed out");
+  });
 });
-pubusb.run();
