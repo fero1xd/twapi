@@ -1,5 +1,12 @@
 # @twapi/pubsub-example
 
+## 1.0.9
+
+### Patch Changes
+
+- Updated dependencies [8197f21]
+  - @twapi/pubsub@1.1.0
+
 ## 1.0.8
 
 ### Patch Changes

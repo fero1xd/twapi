@@ -1,5 +1,11 @@
 # @twapi/pubsub
 
+## 1.1.0
+
+### Minor Changes
+
+- 8197f21: feat(pubsub): added stop method & made remove listener method asynchronous
+
 ## 1.0.3
 
 ### Patch Changes
