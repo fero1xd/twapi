@@ -9,7 +9,6 @@
   "scripts": {
     "dev": "tsup src/index.ts --format cjs,esm --dts --watch",
     "build": "tsup src/index.ts --format cjs,esm --dts",
-    "test": "vitest run",
     "lint": "eslint \"**/*.{ts,tsx}\" --max-warnings 0",
     "typecheck": "tsc --noEmit"
   },

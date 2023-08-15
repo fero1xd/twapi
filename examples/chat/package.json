@@ -1,10 +1,12 @@
 {
-  "name": "chat",
-  "version": "1.0.0",
-  "description": "",
+  "name": "@twapi/chat-example",
+  "version": "0.0.0",
+  "description": "An example showing how to use @twapi/chat to interact with twitch chat",
+  "private": true,
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "tsup src/index.ts --format cjs,esm --dts",
+    "lint": "eslint \"**/*.{ts,tsx}\" --max-warnings 0"
   },
   "keywords": [],
   "author": "",
@@ -16,6 +18,7 @@
   },
   "devDependencies": {
     "@types/node": "^20.5.0",
-    "dotenv": "^16.3.1"
+    "dotenv": "^16.3.1",
+    "tsup": "^7.1.0"
   }
 }
