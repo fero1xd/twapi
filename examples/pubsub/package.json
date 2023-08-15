@@ -1,6 +1,6 @@
 {
   "name": "@twapi/pubsub-example",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "description": "An example showing how to use @twapi/pubsub to interact with twitch pubsub",
   "main": "index.js",
   "private": true,
