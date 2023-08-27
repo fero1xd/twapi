@@ -2,6 +2,7 @@ import { AuthProvider } from "@twapi/auth";
 import { WebSocket, MessageEvent } from "isomorphic-ws";
 import { type LoggerType, createLogger } from "@twapi/logger";
 import { splitIrcMessage } from "./internal/utils";
+import { parseMessage } from "./internal/parser";
 
 export class ChatClient {
   // Websocket connection
@@ -32,7 +33,7 @@ export class ChatClient {
   }
 
   public connect() {
-    this._connection = new WebSocket("ws://irc-ws.chat.twitch.tv:80	");
+    this._connection = new WebSocket("ws://irc-ws.chat.twitch.tv:80");
 
     this._connection.onopen = this._onOpen.bind(this);
     this._connection.onmessage = this._onMessage.bind(this);
@@ -41,7 +42,7 @@ export class ChatClient {
   private _onMessage(e: MessageEvent) {
     const messages = splitIrcMessage(e.data.toString());
 
-    console.log(messages);
+    messages.forEach((m) => console.log(parseMessage(m)));
   }
 
   private async _onOpen() {
