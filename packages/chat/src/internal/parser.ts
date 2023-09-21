@@ -9,7 +9,7 @@ import {
   MessageTags,
   ParsedMessage,
   Maybe,
-} from "./interfaces";
+} from './interfaces';
 
 export function parseMessage(message: string): Maybe<ParsedMessage> {
   let parsedMessage: ParsedMessage = {
@@ -31,9 +31,9 @@ export function parseMessage(message: string): Maybe<ParsedMessage> {
   let rawParametersComponent: Maybe<string> = null;
 
   // If the message includes tags, get the tags component of the IRC message.
-  if (message[idx] === "@") {
+  if (message[idx] === '@') {
     // The message includes tags.
-    let endIdx = message.indexOf(" ");
+    let endIdx = message.indexOf(' ');
     rawTagsComponent = message.slice(1, endIdx);
     idx = endIdx + 1; // Should now point to source colon (:).
   }
@@ -41,16 +41,16 @@ export function parseMessage(message: string): Maybe<ParsedMessage> {
   // Get the source component (nick and host) of the IRC message.
   // The idx should point to the source part; otherwise, it's a PING command.
 
-  if (message[idx] === ":") {
+  if (message[idx] === ':') {
     idx += 1;
-    let endIdx = message.indexOf(" ", idx);
+    let endIdx = message.indexOf(' ', idx);
     rawSourceComponent = message.slice(idx, endIdx);
     idx = endIdx + 1; // Should point to the command part of the message.
   }
 
   // Get the command component of the IRC message.
 
-  let endIdx = message.indexOf(":", idx); // Looking for the parameters part of the message.
+  let endIdx = message.indexOf(':', idx); // Looking for the parameters part of the message.
   if (-1 == endIdx) {
     // But not all messages include the parameters part.
     endIdx = message.length;
@@ -96,32 +96,32 @@ function parseTags(tags: string): MessageTags {
 
   const tagsToIgnore = {
     // List of tags to ignore.
-    "client-nonce": null,
+    'client-nonce': null,
     flags: null,
   };
 
   let dictParsedTags: MessageTags = {}; // Holds the parsed list of tags.
   // The key is the tag's name (e.g., color).
-  let parsedTags = tags.split(";");
+  let parsedTags = tags.split(';');
 
   parsedTags.forEach((tag) => {
-    let parsedTag = tag.split("="); // Tags are key/value pairs.
-    let tagValue = parsedTag[1] === "" ? null : parsedTag[1];
+    let parsedTag = tag.split('='); // Tags are key/value pairs.
+    let tagValue = parsedTag[1] === '' ? null : parsedTag[1];
 
     switch (
       parsedTag[0] // Switch on tag name
     ) {
-      case "badges":
-      case "badge-info":
+      case 'badges':
+      case 'badge-info':
         // badges=staff/1,broadcaster/1,turbo/1;
 
         if (tagValue) {
           let dict: MessageTags = {}; // Holds the list of badge objects.
 
           // The key is the badge's name (e.g., subscriber).
-          let badges = tagValue.split(",");
+          let badges = tagValue.split(',');
           badges.forEach((pair) => {
-            let badgeParts = pair.split("/");
+            let badgeParts = pair.split('/');
             dict[badgeParts[0]] = badgeParts[1];
           });
           dictParsedTags[parsedTag[0]] = dict;
@@ -129,7 +129,7 @@ function parseTags(tags: string): MessageTags {
           dictParsedTags[parsedTag[0]] = null;
         }
         break;
-      case "emotes":
+      case 'emotes':
         // emotes=25:0-4,12-16/1902:6-10
 
         if (tagValue) {
@@ -140,18 +140,18 @@ function parseTags(tags: string): MessageTags {
             }[];
           } = {}; // Holds a list of emote objects.
           // The key is the emote's ID.
-          let emotes = tagValue.split("/");
+          let emotes = tagValue.split('/');
           emotes.forEach((emote) => {
-            let emoteParts = emote.split(":");
+            let emoteParts = emote.split(':');
 
             let textPositions: {
               startPosition: string;
               endPosition: string;
             }[] = []; // The list of position objects that identify
             // the location of the emote in the chat message.
-            let positions = emoteParts[1].split(",");
+            let positions = emoteParts[1].split(',');
             positions.forEach((position) => {
-              let positionParts = position.split("-");
+              let positionParts = position.split('-');
               textPositions.push({
                 startPosition: positionParts[0],
                 endPosition: positionParts[1],
@@ -167,10 +167,10 @@ function parseTags(tags: string): MessageTags {
         }
 
         break;
-      case "emote-sets":
+      case 'emote-sets':
         // emote-sets=0,33,50,237
         if (tagValue) {
-          let emoteSetIds = tagValue.split(","); // Array of emote set IDs.
+          let emoteSetIds = tagValue.split(','); // Array of emote set IDs.
           dictParsedTags[parsedTag[0]] = emoteSetIds;
         }
         break;
@@ -192,26 +192,26 @@ function parseTags(tags: string): MessageTags {
 
 function parseCommand(rawCommandComponent: string): Maybe<MessageCommand> {
   let parsedCommand: Maybe<MessageCommand> = null;
-  let commandParts = rawCommandComponent.split(" ");
+  let commandParts = rawCommandComponent.split(' ');
 
   switch (commandParts[0]) {
-    case "JOIN":
-    case "PART":
-    case "NOTICE":
-    case "CLEARCHAT":
-    case "HOSTTARGET":
-    case "PRIVMSG":
+    case 'JOIN':
+    case 'PART':
+    case 'NOTICE':
+    case 'CLEARCHAT':
+    case 'HOSTTARGET':
+    case 'PRIVMSG':
       parsedCommand = {
         command: commandParts[0],
         channel: commandParts[1],
       };
       break;
-    case "PING":
+    case 'PING':
       parsedCommand = {
         command: commandParts[0],
       };
       break;
-    case "CAP":
+    case 'CAP':
       parsedCommand = {
         command: commandParts[0],
         // isCapRequestEnabled: commandParts[2] === "ACK" ? true : false,
@@ -219,47 +219,49 @@ function parseCommand(rawCommandComponent: string): Maybe<MessageCommand> {
         // enabled capabilities.
       };
       break;
-    case "GLOBALUSERSTATE": // Included only if you request the /commands capability.
+    case 'GLOBALUSERSTATE': // Included only if you request the /commands capability.
       // But it has no meaning without also including the /tags capability.
       parsedCommand = {
         command: commandParts[0],
       };
       break;
-    case "USERSTATE": // Included only if you request the /commands capability.
-    case "ROOMSTATE": // But it has no meaning without also including the /tags capabilities.
+    case 'USERSTATE': // Included only if you request the /commands capability.
+    case 'ROOMSTATE': // But it has no meaning without also including the /tags capabilities.
       parsedCommand = {
         command: commandParts[0],
         channel: commandParts[1],
       };
       break;
-    case "RECONNECT":
+    case 'RECONNECT':
       console.log(
-        "The Twitch IRC server is about to terminate the connection for maintenance."
+        'The Twitch IRC server is about to terminate the connection for maintenance.'
       );
       parsedCommand = {
         command: commandParts[0],
       };
       break;
-    case "421":
+    case '421':
       console.log(`Unsupported IRC command: ${commandParts[2]}`);
       return null;
-    case "001": // Logged in (successfully authenticated).
+    case '001': // Logged in (successfully authenticated).
       parsedCommand = {
         command: commandParts[0],
         channel: commandParts[1],
+        numeric: true,
       };
       break;
-    case "002": // Ignoring all other numeric messages.
-    case "003":
-    case "004":
-    case "353": // Tells you who else is in the chat room you're joining.
-    case "366":
-    case "372":
-    case "375":
-    case "376":
+    case '002': // Ignoring all other numeric messages.
+    case '003':
+    case '004':
+    case '353': // Tells you who else is in the chat room you're joining.
+    case '366':
+    case '372':
+    case '375':
+    case '376':
       console.log(`numeric message: ${commandParts[0]}`);
       parsedCommand = {
         command: commandParts[0],
+        numeric: true,
       };
       break;
     default:
@@ -277,7 +279,7 @@ function parseSource(rawSourceComponent: Maybe<string>): Maybe<MessageSource> {
     // Not all messages contain a source
     return null;
   } else {
-    let sourceParts = rawSourceComponent.split("!");
+    let sourceParts = rawSourceComponent.split('!');
     return {
       nick: sourceParts.length == 2 ? sourceParts[0] : null,
       host: sourceParts.length == 2 ? sourceParts[1] : sourceParts[0],

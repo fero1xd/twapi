@@ -12,6 +12,7 @@ export interface MessageSource {
 export interface MessageCommand {
   command: string;
   channel?: string;
+  numeric?: boolean;
 }
 
 export interface ParsedMessage {
@@ -19,4 +20,15 @@ export interface ParsedMessage {
   source: MessageSource | null;
   command: MessageCommand | null;
   parameters: string | null;
+}
+
+export interface UserState {
+  badges: MessageTags | null;
+  'badges-info': MessageTags | null;
+  color: string;
+  'display-name': string;
+  'emote-sets': string[] | null;
+  'user-id': string;
+  'user-type': '' | 'admin' | 'global_mod' | 'staff';
+  turbo: boolean;
 }

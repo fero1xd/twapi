@@ -1,6 +1,6 @@
-import { AuthProvider, Credentials } from "@twapi/auth";
-import { ChatClient } from "@twapi/chat";
-import "dotenv/config";
+import { AuthProvider, Credentials } from '@twapi/auth';
+import { ChatClient } from '@twapi/chat';
+import 'dotenv/config';
 
 const credentials = new Credentials(
   process.env.SAMPLE_OAUTH_TOKEN!,
@@ -13,7 +13,13 @@ const main = async () => {
 
   const chat = new ChatClient(authProvider);
 
-  chat.connect();
+  chat.connect(() => {
+    chat.join('shanks_ttv', () => {
+      console.log('leaving shanks ttv');
+
+      chat.leave('shanks_ttv');
+    });
+  });
 };
 
 main();
